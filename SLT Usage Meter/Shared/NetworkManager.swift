@@ -124,6 +124,36 @@ class NetworkManager {
         return response.dataBundle?.usageDetails ?? []
     }
     
+    func fetchCurrentDailyUsage(subscriberID: String, billDate: String = "01") async throws -> DailyUsageDataBundle? {
+        let internationalNumber = convertToInternationalFormat(subscriberID)
+        let url = APIEndpoint.currentDailyUsage(subscriberID: internationalNumber, billDate: billDate).url
+        let request = try createRequest(url: url)
+        
+        let (data, _) = try await execute(request: request)
+        let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
+        return response.dataBundle
+    }
+    
+    func fetchPreviousDailyUsage(subscriberID: String, billDate: String = "01", monthIndex: Int) async throws -> DailyUsageDataBundle? {
+        let internationalNumber = convertToInternationalFormat(subscriberID)
+        let url = APIEndpoint.previousDailyUsage(subscriberID: internationalNumber, billDate: billDate, monthIndex: monthIndex).url
+        let request = try createRequest(url: url)
+        
+        let (data, _) = try await execute(request: request)
+        let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
+        return response.dataBundle
+    }
+    
+    func fetchProtocolReport(subscriberID: String, date: String) async throws -> ProtocolReportBundle? {
+        let internationalNumber = convertToInternationalFormat(subscriberID)
+        let url = APIEndpoint.protocolReport(subscriberID: internationalNumber, date: date).url
+        let request = try createRequest(url: url)
+        
+        let (data, _) = try await execute(request: request)
+        let response = try JSONDecoder().decode(ProtocolReportResponse.self, from: data)
+        return response.dataBundle
+    }
+    
     // MARK: - Private Helpers
     
     // Helper function to convert phone number to international format

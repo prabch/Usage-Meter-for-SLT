@@ -16,6 +16,7 @@
 		335B8A8A2C312677002CC442 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A892C312677002CC442 /* LoginView.swift */; };
 		335B8A8C2C312683002CC442 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A8B2C312683002CC442 /* MainView.swift */; };
 		335B8A912C312683002CC442 /* UsageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A902C312683002CC442 /* UsageView.swift */; };
+		335B8A942C312684002CC442 /* DailyUsageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A952C312684002CC442 /* DailyUsageView.swift */; };
 		335B8A932C312683002CC442 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A922C312683002CC442 /* AccountView.swift */; };
 		336707502F01519100403CAB /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335B8AA62C3127B4002CC442 /* WidgetKit.framework */; };
 		336707512F01519100403CAB /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335B8AA82C3127B4002CC442 /* SwiftUI.framework */; };
@@ -76,6 +77,7 @@
 		335B8A892C312677002CC442 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		335B8A8B2C312683002CC442 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		335B8A902C312683002CC442 /* UsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageView.swift; sourceTree = "<group>"; };
+		335B8A952C312684002CC442 /* DailyUsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyUsageView.swift; sourceTree = "<group>"; };
 		335B8A922C312683002CC442 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		335B8AA62C3127B4002CC442 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		335B8AA82C3127B4002CC442 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -151,6 +153,7 @@
 				335B8A892C312677002CC442 /* LoginView.swift */,
 				335B8A8B2C312683002CC442 /* MainView.swift */,
 				335B8A902C312683002CC442 /* UsageView.swift */,
+				335B8A952C312684002CC442 /* DailyUsageView.swift */,
 				335B8A922C312683002CC442 /* AccountView.swift */,
 				335B8A7C2C312531002CC442 /* Assets.xcassets */,
 				335B8A7E2C312531002CC442 /* SLT_Usage_Meter.entitlements */,
@@ -300,6 +303,7 @@
 				335B8A792C312530002CC442 /* SLT_Usage_Meter.xcdatamodeld in Sources */,
 				335B8A8C2C312683002CC442 /* MainView.swift in Sources */,
 				335B8A912C312683002CC442 /* UsageView.swift in Sources */,
+				335B8A942C312684002CC442 /* DailyUsageView.swift in Sources */,
 				335B8A932C312683002CC442 /* AccountView.swift in Sources */,
 				335B8A742C312530002CC442 /* SLT_Usage_MeterApp.swift in Sources */,
 				335B8A7B2C312530002CC442 /* ContentView.swift in Sources */,
@@ -462,6 +466,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SLT Usage Meter/Preview Content\"";
+				DEVELOPMENT_TEAM = L2LDQS9L5L;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -486,7 +491,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = prabch.sltusage;
+				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage;
 				PRODUCT_NAME = "Usage Meter for SLT";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -509,6 +514,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SLT Usage Meter/Preview Content\"";
+				DEVELOPMENT_TEAM = L2LDQS9L5L;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -533,7 +539,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = prabch.sltusage;
+				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage;
 				PRODUCT_NAME = "Usage Meter for SLT";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -555,6 +561,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = L2LDQS9L5L;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -578,7 +585,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = "prabch.sltusage.SLT-Usage-Meter-Widget";
+				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -607,6 +614,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = L2LDQS9L5L;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -630,7 +638,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = "prabch.sltusage.SLT-Usage-Meter-Widget";
+				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
