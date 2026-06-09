@@ -136,7 +136,7 @@ struct UsageSummaryBundle: Codable, Equatable {
 }
 
 struct PackageSummary: Codable, Equatable {
-    let limit: String
+    let limit: String?
     let used: String
     let volumeUnit: String
     

@@ -368,19 +368,19 @@ struct UsageBreakdownView: View {
 struct BreakdownCard: View {
     let title: String
     let used: String
-    let limit: String
+    let limit: String?
     let unit: String
     let icon: String
     let color: Color
     
     var remainingPercentage: Double {
-        guard let limitVal = Double(limit), limitVal > 0 else { return 0 }
+        guard let limitStr = limit, let limitVal = Double(limitStr), limitVal > 0 else { return 0 }
         guard let usedVal = Double(used) else { return 0 }
         return max(0, 100 - (usedVal / limitVal) * 100)
     }
     
     var remaining: Double {
-        guard let limitVal = Double(limit), let usedVal = Double(used) else { return 0 }
+        guard let limitStr = limit, let limitVal = Double(limitStr), let usedVal = Double(used) else { return 0 }
         return max(0, limitVal - usedVal)
     }
     
@@ -396,33 +396,51 @@ struct BreakdownCard: View {
                         .fontWeight(.semibold)
                 }
                 Spacer()
-                Text("\(used) / \(limit) \(unit)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(height: 6)
-                    
-                    Capsule()
-                        .fill(color)
-                        .frame(width: geo.size.width * min(1.0, (Double(used) ?? 0) / (Double(limit) ?? 1)), height: 6)
+                HStack(spacing: 4) {
+                    if let limit = limit {
+                        Text("\(used) / \(limit) \(unit)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("\(used) \(unit)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text("Unlimited")
+                            .font(.system(size: 9))
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.purple.opacity(0.15))
+                            .foregroundColor(.purple)
+                            .cornerRadius(4)
+                    }
                 }
             }
-            .frame(height: 6)
             
-            HStack {
-                Spacer()
-                Text("Remaining: \(String(format: "%.1f", remaining)) \(unit)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Text(String(format: "%.0f%%", remainingPercentage))
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(color)
+            if limit != nil {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.gray.opacity(0.1))
+                            .frame(height: 6)
+                        
+                        Capsule()
+                            .fill(color)
+                            .frame(width: geo.size.width * min(1.0, (Double(used) ?? 0) / (Double(limit ?? "1") ?? 1)), height: 6)
+                    }
+                }
+                .frame(height: 6)
+                
+                HStack {
+                    Spacer()
+                    Text("Remaining: \(String(format: "%.1f", remaining)) \(unit)")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(String(format: "%.0f%%", remainingPercentage))
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(color)
+                }
             }
         }
         .padding()
