@@ -218,3 +218,68 @@ struct UsageDetail: Codable, Identifiable, Equatable {
         return lhs.name == rhs.name && lhs.used == rhs.used && lhs.limit == rhs.limit
     }
 }
+
+// MARK: - Daily Usage
+struct DailyUsageResponse: Codable {
+    let isSuccess: Bool
+    let dataBundle: DailyUsageDataBundle?
+}
+
+struct DailyUsageDataBundle: Codable {
+    let previousmonths: PreviousMonths?
+    let dailylist: [DailyUsageEntry]
+}
+
+struct PreviousMonths: Codable {
+    let previous1: String
+    let previous2: String
+}
+
+struct DailyUsageEntry: Codable, Identifiable {
+    var id: String { date }
+    let date: String
+    let displaydate: String
+    let volumeunit: String
+    let daily_total_usage: String
+    let daily_percentage: Double
+    let usages: [DailyOfferUsage]?
+    
+    var usageItems: [DailyOfferUsage] {
+        usages ?? []
+    }
+}
+
+struct DailyOfferUsage: Codable, Identifiable {
+    var id: String { "\(offer_name)-\(sorter)" }
+    let offer_name: String
+    let volume: String
+    let percentage: Double
+    let sorter: Int
+}
+
+// MARK: - Protocol Report
+struct ProtocolReportResponse: Codable {
+    let isSuccess: Bool
+    let dataBundle: ProtocolReportBundle?
+}
+
+struct ProtocolReportBundle: Codable {
+    let subscriberid: String
+    let date: String
+    let total: [ProtocolReportEntry]
+    let download: [ProtocolReportEntry]
+    let upload: [ProtocolReportEntry]
+}
+
+struct ProtocolReportEntry: Codable, Identifiable {
+    var id: String { name }
+    let name: String
+    let presentage: Double
+    let usage: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case name = "protocol"
+        case presentage
+        case usage
+    }
+}
