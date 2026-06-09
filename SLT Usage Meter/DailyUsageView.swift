@@ -7,6 +7,52 @@
 
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#endif
+
+private enum DailyUsagePlatform {
+    static var contentMaxWidth: CGFloat? {
+        #if os(macOS)
+        return 720
+        #else
+        return nil
+        #endif
+    }
+    
+    static var horizontalPadding: CGFloat {
+        #if os(macOS)
+        return 24
+        #else
+        return 0
+        #endif
+    }
+    
+    static var sectionSpacing: CGFloat {
+        #if os(macOS)
+        return 16
+        #else
+        return 20
+        #endif
+    }
+    
+    static var cardBackground: Color {
+        #if os(macOS)
+        return Color(NSColor.controlBackgroundColor)
+        #else
+        return Color.primary.opacity(0.05)
+        #endif
+    }
+    
+    static var groupedBackground: Color {
+        #if os(macOS)
+        return Color(NSColor.windowBackgroundColor)
+        #else
+        return Color.clear
+        #endif
+    }
+}
+
 struct DailyUsageView: View {
     let subscriberID: String?
     
@@ -77,26 +123,12 @@ struct DailyUsageView: View {
                 }
             } else {
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: DailyUsagePlatform.sectionSpacing) {
                         monthPicker
-                            .padding(.top)
+                            .padding(.top, 8)
                         
                         if let error = errorMessage {
-                            HStack(spacing: 8) {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.orange)
-                                Text(error)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Button("Retry") {
-                                    fetchDailyUsage()
-                                }
-                                .font(.subheadline)
-                            }
-                            .padding()
-                            .background(RoundedRectangle(cornerRadius: 12).fill(Color.orange.opacity(0.08)))
-                            .padding(.horizontal)
+                            errorBanner(error)
                         }
                         
                         if isLoading {
@@ -111,16 +143,7 @@ struct DailyUsageView: View {
                                 monthTitle: selectedMonthTitle
                             )
                             
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Daily Breakdown")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .padding(.horizontal)
-                                
-                                ForEach(sortedDays) { day in
-                                    DailyUsageRow(day: day, subscriberID: subscriberID ?? "")
-                                }
-                            }
+                            dailyBreakdownSection
                         } else if dailyUsage != nil {
                             Text("No daily usage data for \(selectedMonthTitle)")
                                 .foregroundColor(.secondary)
@@ -128,10 +151,24 @@ struct DailyUsageView: View {
                         }
                     }
                     .padding(.vertical)
+                    .frame(maxWidth: DailyUsagePlatform.contentMaxWidth)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, DailyUsagePlatform.horizontalPadding)
                 }
                 #if os(iOS)
                 .refreshable {
                     await refreshDailyUsage()
+                }
+                #endif
+                #if os(macOS)
+                .background(DailyUsagePlatform.groupedBackground)
+                .toolbar {
+                    ToolbarItem(placement: .automatic) {
+                        Button(action: fetchDailyUsage) {
+                            Label("Refresh", systemImage: "arrow.clockwise")
+                        }
+                        .disabled(isLoading)
+                    }
                 }
                 #endif
             }
@@ -146,37 +183,131 @@ struct DailyUsageView: View {
         }
     }
     
-    private var monthPicker: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    MonthChip(
-                        title: "Current",
-                        isSelected: selectedMonthIndex == 0,
-                        action: { selectMonth(0) }
-                    )
-                    .id("month-chip-0")
+    @ViewBuilder
+    private var dailyBreakdownSection: some View {
+        #if os(macOS)
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Daily Breakdown")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            VStack(spacing: 0) {
+                ForEach(Array(sortedDays.enumerated()), id: \.element.id) { index, day in
+                    DailyUsageRow(day: day, subscriberID: subscriberID ?? "")
                     
-                    ForEach(visibleMonthIndices, id: \.self) { index in
-                        MonthChip(
-                            title: displayLabel(for: index),
-                            isSelected: selectedMonthIndex == index,
-                            action: { selectMonth(index) }
-                        )
-                        .id("month-chip-\(index)")
-                    }
-                    
-                    if canShowOlderChip {
-                        MonthChip(
-                            title: "Older",
-                            systemImage: "chevron.right",
-                            isSelected: false,
-                            action: { expandOlderMonths(scrollProxy: proxy) }
-                        )
-                        .id("older-chip")
+                    if index < sortedDays.count - 1 {
+                        Divider()
+                            .padding(.horizontal, 12)
                     }
                 }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(DailyUsagePlatform.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            )
+        }
+        #else
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Daily Breakdown")
+                .font(.title3)
+                .fontWeight(.bold)
                 .padding(.horizontal)
+            
+            ForEach(sortedDays) { day in
+                DailyUsageRow(day: day, subscriberID: subscriberID ?? "")
+            }
+        }
+        #endif
+    }
+    
+    @ViewBuilder
+    private func errorBanner(_ error: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+            Text(error)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            Spacer()
+            Button("Retry") {
+                fetchDailyUsage()
+            }
+            #if os(macOS)
+            .buttonStyle(.bordered)
+            #else
+            .font(.subheadline)
+            #endif
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.orange.opacity(0.08))
+        )
+        #if os(iOS)
+        .padding(.horizontal)
+        #endif
+    }
+    
+    private var monthPicker: some View {
+        #if os(macOS)
+        macMonthPicker
+        #else
+        iosMonthPicker
+        #endif
+    }
+    
+    private var iosMonthPicker: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                monthChipRow(scrollProxy: proxy)
+                    .padding(.horizontal)
+            }
+        }
+    }
+    
+    private var macMonthPicker: some View {
+        HStack(spacing: 8) {
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    monthChipRow(scrollProxy: proxy)
+                }
+                .hideHorizontalScrollIndicators()
+            }
+            
+            Spacer(minLength: 0)
+        }
+    }
+    
+    private func monthChipRow(scrollProxy: ScrollViewProxy) -> some View {
+        HStack(spacing: 8) {
+            MonthChip(
+                title: "Current",
+                isSelected: selectedMonthIndex == 0,
+                action: { selectMonth(0) }
+            )
+            .id("month-chip-0")
+            
+            ForEach(visibleMonthIndices, id: \.self) { index in
+                MonthChip(
+                    title: displayLabel(for: index),
+                    isSelected: selectedMonthIndex == index,
+                    action: { selectMonth(index) }
+                )
+                .id("month-chip-\(index)")
+            }
+            
+            if canShowOlderChip {
+                MonthChip(
+                    title: "Older",
+                    systemImage: "chevron.right",
+                    isSelected: false,
+                    action: { expandOlderMonths(scrollProxy: scrollProxy) }
+                )
+                .id("older-chip")
             }
         }
     }
@@ -260,6 +391,8 @@ struct DailyUsageView: View {
         }
     }
     
+    // MARK: - Fetching
+    
     private func fetchDailyUsage() {
         guard let subscriberID else { return }
         
@@ -282,7 +415,7 @@ struct DailyUsageView: View {
                     )
                 }
                 
-                await MainActor.run {
+                DispatchQueue.main.async {
                     guard generation == self.fetchGeneration, monthIndex == self.selectedMonthIndex else { return }
                     
                     if let bundle {
@@ -302,7 +435,7 @@ struct DailyUsageView: View {
                     self.isLoading = false
                 }
             } catch {
-                await MainActor.run {
+                DispatchQueue.main.async {
                     guard generation == self.fetchGeneration, monthIndex == self.selectedMonthIndex else { return }
                     self.errorMessage = error.localizedDescription
                     self.isLoading = false
@@ -326,24 +459,28 @@ struct DailyUsageView: View {
 struct DailyUsageSkeletonView: View {
     var body: some View {
         VStack(spacing: 20) {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(Color.primary.opacity(0.06))
-                .frame(height: 140)
-                .padding(.horizontal)
+                .frame(height: 120)
                 .shimmer()
             
             VStack(alignment: .leading, spacing: 12) {
+                #if os(iOS)
                 RoundedRectangle(cornerRadius: 6)
                     .fill(Color.primary.opacity(0.06))
                     .frame(width: 140, height: 20)
                     .padding(.horizontal)
                     .shimmer()
+                #endif
                 
                 ForEach(0..<6, id: \.self) { _ in
                     DailyUsageRowSkeleton()
                 }
             }
         }
+        #if os(iOS)
+        .padding(.horizontal, 0)
+        #endif
     }
 }
 
@@ -363,15 +500,19 @@ struct DailyUsageRowSkeleton: View {
             RoundedRectangle(cornerRadius: 4)
                 .fill(Color.primary.opacity(0.06))
                 .frame(height: 8)
-            
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.primary.opacity(0.06))
-                .frame(width: 120, height: 10)
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(0.03)))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.08), lineWidth: 1))
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.primary.opacity(0.03))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.gray.opacity(0.08), lineWidth: 1)
+        )
+        #if os(iOS)
         .padding(.horizontal)
+        #endif
         .shimmer()
     }
 }
@@ -409,9 +550,45 @@ private extension View {
     func shimmer() -> some View {
         modifier(ShimmerModifier())
     }
+    
+    @ViewBuilder
+    func hideHorizontalScrollIndicators() -> some View {
+        if #available(macOS 13.3, iOS 16.4, *) {
+            self.scrollIndicators(.hidden, axes: .horizontal)
+        } else {
+            self
+        }
+    }
 }
 
 // MARK: - Components
+
+struct CapsuleProgressBar: View {
+    let percentage: Double
+    var height: CGFloat = 8
+    var colors: [Color] = [.blue, .cyan]
+    
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.gray.opacity(0.1))
+                    .frame(height: height)
+                
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: colors),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: geo.size.width * min(1.0, percentage / 100), height: height)
+            }
+        }
+        .frame(height: height)
+    }
+}
 
 struct MonthChip: View {
     let title: String
@@ -420,6 +597,18 @@ struct MonthChip: View {
     let action: () -> Void
     
     var body: some View {
+        #if os(macOS)
+        Group {
+            if isSelected {
+                macChipButton
+                    .buttonStyle(.borderedProminent)
+            } else {
+                macChipButton
+                    .buttonStyle(.bordered)
+            }
+        }
+        .controlSize(.regular)
+        #else
         Button(action: action) {
             HStack(spacing: 4) {
                 Text(title)
@@ -439,7 +628,22 @@ struct MonthChip: View {
             .foregroundColor(isSelected ? .white : .primary)
         }
         .buttonStyle(.plain)
+        #endif
     }
+    
+    #if os(macOS)
+    private var macChipButton: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(title)
+                if let systemImage {
+                    Image(systemName: systemImage)
+                        .font(.caption)
+                }
+            }
+        }
+    }
+    #endif
 }
 
 struct DailyUsageOverviewCard: View {
@@ -451,6 +655,54 @@ struct DailyUsageOverviewCard: View {
     var monthTitle: String = "Current"
     
     var body: some View {
+        #if os(macOS)
+        macOverviewCard
+        #else
+        iosOverviewCard
+        #endif
+    }
+    
+    private var macOverviewCard: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(monthTitle)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text(String(format: "%.1f %@", totalUsage, unit))
+                        .font(.system(size: 28, weight: .semibold))
+                }
+                Spacer()
+                Image(systemName: "chart.bar.fill")
+                    .font(.title2)
+                    .foregroundColor(.accentColor)
+            }
+            .padding()
+            
+            Divider()
+            
+            HStack(spacing: 0) {
+                overviewStat(label: "Days", value: "\(dayCount)")
+                Divider().frame(height: 36)
+                overviewStat(label: "Daily Avg", value: String(format: "%.1f %@", averageUsage, unit))
+                if let peak = peakDay {
+                    Divider().frame(height: 36)
+                    overviewStat(label: "Peak", value: peak.displaydate)
+                }
+            }
+            .padding(.vertical, 10)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(DailyUsagePlatform.cardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+    }
+    
+    private var iosOverviewCard: some View {
         VStack(spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
@@ -477,7 +729,7 @@ struct DailyUsageOverviewCard: View {
                 StatItem(label: "Daily Avg", value: String(format: "%.1f %@", averageUsage, unit))
                 Spacer()
                 if let peak = peakDay {
-                    StatItem(label: "Peak", value: "\(peak.displaydate)")
+                    StatItem(label: "Peak", value: peak.displaydate)
                 }
             }
         }
@@ -492,6 +744,18 @@ struct DailyUsageOverviewCard: View {
         .cornerRadius(16)
         .shadow(color: Color.blue.opacity(0.3), radius: 10, x: 0, y: 5)
         .padding(.horizontal)
+    }
+    
+    private func overviewStat(label: String, value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Text(value)
+                .font(.subheadline)
+                .fontWeight(.medium)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -521,6 +785,9 @@ struct DailyUsageRow: View {
     @State private var isLoadingReport = false
     @State private var reportError: String?
     @State private var selectedBreakdown = 0
+    #if os(macOS)
+    @State private var isHovered = false
+    #endif
     
     private var usageColor: Color {
         if day.daily_percentage >= 90 { return .red }
@@ -542,51 +809,122 @@ struct DailyUsageRow: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        #if os(macOS)
+        macRow
+        #else
+        iosRow
+        #endif
+    }
+    
+    private var dayHeader: some View {
+        HStack {
+            Text(day.displaydate)
+                .font(.subheadline)
+                .fontWeight(.medium)
+            Spacer()
+            Text("\(day.daily_total_usage) \(day.volumeunit)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            #if os(iOS)
+            if canExpand {
+                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            #endif
+        }
+    }
+    
+    private var usageBar: some View {
+        CapsuleProgressBar(
+            percentage: day.daily_percentage,
+            height: usageBarHeight,
+            colors: [usageColor, usageColor.opacity(0.7)]
+        )
+    }
+    
+    private var usageBarHeight: CGFloat {
+        #if os(macOS)
+        return 6
+        #else
+        return 8
+        #endif
+    }
+    
+    #if os(macOS)
+    private var macRow: some View {
+        VStack(alignment: .leading, spacing: 0) {
             Button(action: toggleExpanded) {
-                HStack {
-                    Text(day.displaydate)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Spacer()
-                    Text("\(day.daily_total_usage) \(day.volumeunit)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    if canExpand {
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.caption2)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Text(day.displaydate)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.primary)
+                        
+                        Spacer(minLength: 8)
+                        
+                        Text("\(day.daily_total_usage) \(day.volumeunit)")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
                     }
+                    
+                    usageBar
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!canExpand)
+            .onHover { hovering in
+                isHovered = hovering
+                if hovering && canExpand {
+                    NSCursor.pointingHand.push()
+                } else {
+                    NSCursor.pop()
+                }
+            }
+            .background(macRowBackground)
+            
+            if isExpanded {
+                protocolDetailsSection
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 12)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .animation(.easeInOut(duration: 0.18), value: isExpanded)
+    }
+    
+    private var macRowBackground: some View {
+        Group {
+            if isExpanded {
+                Color.accentColor.opacity(0.07)
+            } else if isHovered && canExpand {
+                Color.primary.opacity(0.04)
+            } else {
+                Color.clear
+            }
+        }
+    }
+    #endif
+    
+    private var iosRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button(action: toggleExpanded) {
+                dayHeader
             }
             .buttonStyle(.plain)
             .disabled(!canExpand)
             
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(height: 8)
-                    
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [usageColor, usageColor.opacity(0.7)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: geo.size.width * min(1.0, day.daily_percentage / 100), height: 8)
-                }
-            }
-            .frame(height: 8)
+            usageBar
             
             if isExpanded {
                 protocolDetailsSection
             }
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(0.05)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(DailyUsagePlatform.cardBackground))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1), lineWidth: 1))
         .padding(.horizontal)
     }
@@ -594,7 +932,9 @@ struct DailyUsageRow: View {
     @ViewBuilder
     private var protocolDetailsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
+            #if os(iOS)
             Divider()
+            #endif
             
             if isLoadingReport {
                 ProtocolReportSkeletonView()
@@ -608,20 +948,50 @@ struct DailyUsageRow: View {
                     Text("Download").tag(1)
                     Text("Upload").tag(2)
                 }
+                #if os(macOS)
                 .pickerStyle(.segmented)
+                .labelsHidden()
+                #else
+                .pickerStyle(.segmented)
+                #endif
                 
                 if activeEntries.isEmpty {
                     Text("No protocol data available")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
+                    #if os(macOS)
+                    VStack(spacing: 0) {
+                        ForEach(Array(activeEntries.enumerated()), id: \.element.id) { index, entry in
+                            ProtocolReportRow(entry: entry)
+                                .padding(.vertical, 6)
+                            
+                            if index < activeEntries.count - 1 {
+                                Divider()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color(NSColor.windowBackgroundColor))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                    )
+                    #else
                     ForEach(activeEntries) { entry in
                         ProtocolReportRow(entry: entry)
                     }
+                    #endif
                 }
             }
         }
+        #if os(iOS)
         .padding(.top, 4)
+        #endif
     }
     
     private func toggleExpanded() {
@@ -629,9 +999,14 @@ struct DailyUsageRow: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             isExpanded.toggle()
         }
-        if isExpanded && protocolReport == nil && !isLoadingReport {
-            fetchProtocolReport()
+        if isExpanded {
+            loadProtocolReportIfNeeded()
         }
+    }
+    
+    private func loadProtocolReportIfNeeded() {
+        guard protocolReport == nil, !isLoadingReport else { return }
+        fetchProtocolReport()
     }
     
     private func fetchProtocolReport() {
@@ -646,12 +1021,12 @@ struct DailyUsageRow: View {
                     subscriberID: subscriberID,
                     date: day.date
                 )
-                await MainActor.run {
+                DispatchQueue.main.async {
                     self.protocolReport = report
                     self.isLoadingReport = false
                 }
             } catch {
-                await MainActor.run {
+                DispatchQueue.main.async {
                     self.reportError = error.localizedDescription
                     self.isLoadingReport = false
                 }
@@ -675,18 +1050,11 @@ struct ProtocolReportRow: View {
                     .foregroundColor(.secondary)
             }
             
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(height: 4)
-                    
-                    Capsule()
-                        .fill(Color.accentColor.opacity(0.8))
-                        .frame(width: geo.size.width * min(1.0, entry.presentage / 100), height: 4)
-                }
-            }
-            .frame(height: 4)
+            CapsuleProgressBar(
+                percentage: entry.presentage,
+                height: 4,
+                colors: [Color.accentColor.opacity(0.8), Color.accentColor.opacity(0.6)]
+            )
         }
     }
 }
