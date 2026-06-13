@@ -45,7 +45,12 @@ struct AccountView: View {
                     
                     VStack(spacing: 0) {
                         HStack {
-                            Text("Hide Phone Number")
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Hide Phone Number")
+                                Text("Hides the phone number in widgets.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                             Spacer()
                             Toggle("Hide Phone Number", isOn: $hidePhoneNumberInWidget)
                                 .labelsHidden()
@@ -57,7 +62,12 @@ struct AccountView: View {
                             .padding(.leading)
                         
                         HStack {
-                            Text("Invert Progress Bars")
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Invert Progress Bars")
+                                Text("Shows remaining usage instead of used usage.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                             Spacer()
                             Toggle("Invert Progress Bars", isOn: $invertProgressBar)
                                 .labelsHidden()
