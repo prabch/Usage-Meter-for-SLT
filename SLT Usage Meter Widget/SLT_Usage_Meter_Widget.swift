@@ -50,8 +50,9 @@ struct Provider: AppIntentTimelineProvider {
                 activeServiceID = bbService.serviceID
             }
 
-            async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: activeServiceID)
-            async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: activeServiceID)
+            let currentServiceID = activeServiceID
+            async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID)
+            async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID)
             
             let (usageSummary, vasBundles) = try await (summary, vas)
             
@@ -120,8 +121,9 @@ struct LegacyProvider: TimelineProvider {
                     activeServiceID = bbService.serviceID
                 }
 
-                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: activeServiceID)
-                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: activeServiceID)
+                let currentServiceID = activeServiceID
+                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID)
+                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID)
                 
                 let (usageSummary, vasBundles) = try await (summary, vas)
                 
