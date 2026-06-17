@@ -190,7 +190,7 @@ struct UsageView: View {
         VStack(alignment: .leading, spacing: 10) {
             // Header
             HStack {
-                Text(hidePhoneNumberInWidget ? "Usage Meter for SLT" : subscriberID)
+                Text(hidePhoneNumberInWidget ? "" : subscriberID)
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(.secondary)
@@ -361,13 +361,13 @@ extension View {
         if #available(iOS 17.0, *) {
             return self.containerBackground(for: .widget) { backgroundView }
         } else {
-            return self.background(backgroundView)
+            return self.padding().background(backgroundView)
         }
         #else
         if #available(macOS 14.0, *) {
             return self.containerBackground(for: .widget) { backgroundView }
         } else {
-            return self.background(backgroundView)
+            return self.padding().background(backgroundView)
         }
         #endif
     }
