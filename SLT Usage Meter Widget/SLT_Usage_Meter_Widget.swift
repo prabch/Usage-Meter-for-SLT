@@ -11,11 +11,15 @@ import SwiftUI
 @available(iOS 17.0, macOS 14.0, *)
 struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0000000000")
+        SimpleEntry.placeholder
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333", hidePhoneNumber: configuration.hidePhoneNumber, hideConnectionStatus: configuration.hideConnectionStatus, invertProgressBar: configuration.invertProgressBar)
+        var entry = SimpleEntry.placeholder
+        entry.hidePhoneNumber = configuration.hidePhoneNumber
+        entry.hideConnectionStatus = configuration.hideConnectionStatus
+        entry.invertProgressBar = configuration.invertProgressBar
+        return entry
     }
     
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
@@ -85,16 +89,43 @@ struct SimpleEntry: TimelineEntry {
     var hideConnectionStatus: Bool = false
     var invertProgressBar: Bool = false
     var isDeprecated: Bool = false
+    
+    static var placeholder: SimpleEntry {
+        let dummyPackageInfo = PackageInfo(
+            packageName: "Web Family Plus",
+            usageDetails: [
+                UsageDetail(name: "Standard", limit: "90.0", remaining: "45.0", used: "45.0", percentage: 50, volumeUnit: "GB", expiryDate: nil, subscriptionId: nil, timestamp: 0, unsubscribable: false, claim: nil),
+                UsageDetail(name: "Free", limit: "5.0", remaining: "1.0", used: "4.0", percentage: 80, volumeUnit: "GB", expiryDate: nil, subscriptionId: nil, timestamp: 0, unsubscribable: false, claim: nil)
+            ]
+        )
+        let dummyUsageSummary = UsageSummaryBundle(
+            status: "NORMAL",
+            myPackageSummary: nil,
+            bonusDataSummary: nil,
+            extraGbDataSummary: nil,
+            myPackageInfo: dummyPackageInfo
+        )
+        let dummyVasBundles: [UsageDetail] = [
+            UsageDetail(name: "YouTube", limit: "10.0", remaining: "5.0", used: "5.0", percentage: 50, volumeUnit: "GB", expiryDate: nil, subscriptionId: nil, timestamp: 0, unsubscribable: false, claim: nil)
+        ]
+        
+        return SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: dummyUsageSummary, vasBundles: dummyVasBundles, subscriberID: "0112223333")
+    }
+    
+    static var deprecatedPlaceholder: SimpleEntry {
+        var entry = placeholder
+        entry.isDeprecated = true
+        return entry
+    }
 }
 
 struct LegacyStaticProvider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0000000000", isDeprecated: true)
+        SimpleEntry.deprecatedPlaceholder
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333", isDeprecated: true)
-        completion(entry)
+        completion(SimpleEntry.deprecatedPlaceholder)
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> ()) {
@@ -156,11 +187,14 @@ struct LegacyProvider: IntentTimelineProvider {
     typealias Intent = LegacyConfigurationIntent
     
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0000000000")
+        SimpleEntry.placeholder
     }
 
     func getSnapshot(for configuration: LegacyConfigurationIntent, in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333", hidePhoneNumber: configuration.hidePhoneNumber?.boolValue ?? false, hideConnectionStatus: configuration.hideConnectionStatus?.boolValue ?? false, invertProgressBar: configuration.invertProgressBar?.boolValue ?? false)
+        var entry = SimpleEntry.placeholder
+        entry.hidePhoneNumber = configuration.hidePhoneNumber?.boolValue ?? false
+        entry.hideConnectionStatus = configuration.hideConnectionStatus?.boolValue ?? false
+        entry.invertProgressBar = configuration.invertProgressBar?.boolValue ?? false
         completion(entry)
     }
 
@@ -498,7 +532,7 @@ struct Widget_Previews: PreviewProvider {
             SLT_Usage_Meter_WidgetEntryView(entry: SimpleEntry(date: .now, isLoggedIn: false, usageSummary: nil, vasBundles: [], subscriberID: nil))
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
             
-            SLT_Usage_Meter_WidgetEntryView(entry: SimpleEntry(date: .now, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333"))
+            SLT_Usage_Meter_WidgetEntryView(entry: SimpleEntry.placeholder)
                 .previewContext(WidgetPreviewContext(family: .systemSmall))
         }
     }
