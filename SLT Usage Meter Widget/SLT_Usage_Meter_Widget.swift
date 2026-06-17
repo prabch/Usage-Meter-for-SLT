@@ -175,6 +175,7 @@ struct LoginPromptView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .widgetBackground(Color.gray.opacity(0.1))
     }
 }
@@ -271,6 +272,7 @@ struct UsageView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .widgetBackground(Color.gray.opacity(0.1))
     }
 }
