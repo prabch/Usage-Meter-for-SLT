@@ -14,14 +14,8 @@ struct AccountView: View {
     
     @State private var showingLogoutConfirmation = false
     
-    @AppStorage("hidePhoneNumberInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
-    private var hidePhoneNumberInWidget: Bool = false
-    
     @AppStorage("invertProgressBar", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
     private var invertProgressBar: Bool = false
-    
-    @AppStorage("hideConnectionStatusInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
-    private var hideConnectionStatusInWidget: Bool = false
     
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -49,40 +43,6 @@ struct AccountView: View {
                     VStack(spacing: 0) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Hide Phone Number")
-                                Text("Hides the phone number in widgets.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            Spacer()
-                            Toggle("Hide Phone Number", isOn: $hidePhoneNumberInWidget)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                        }
-                        .padding()
-                        
-                        Divider()
-                            .padding(.leading)
-                            
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Hide Connection Status")
-                                Text("Hides the status badge in widgets.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            Spacer()
-                            Toggle("Hide Connection Status", isOn: $hideConnectionStatusInWidget)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                        }
-                        .padding()
-                        
-                        Divider()
-                            .padding(.leading)
-                        
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
                                 Text("Invert Progress Bars")
                                 Text("Shows remaining usage instead of used usage.")
                                     .font(.caption)
@@ -98,6 +58,14 @@ struct AccountView: View {
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(0.05)))
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1), lineWidth: 1))
                     .padding(.horizontal)
+                    
+                    Text("To customize preferences for individual widgets, press and hold a widget on your Home Screen and select 'Edit Widget'.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 2)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
                 Button(action: {
@@ -177,15 +145,6 @@ struct AccountView: View {
                 Spacer()
             }
             .padding(.vertical)
-        }
-        .onChange(of: hidePhoneNumberInWidget) { _ in
-            WidgetCenter.shared.reloadAllTimelines()
-        }
-        .onChange(of: invertProgressBar) { _ in
-            WidgetCenter.shared.reloadAllTimelines()
-        }
-        .onChange(of: hideConnectionStatusInWidget) { _ in
-            WidgetCenter.shared.reloadAllTimelines()
         }
     }
 }
