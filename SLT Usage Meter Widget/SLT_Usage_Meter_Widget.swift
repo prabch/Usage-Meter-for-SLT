@@ -186,23 +186,28 @@ struct UsageView: View {
     @AppStorage("hidePhoneNumberInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
     private var hidePhoneNumberInWidget: Bool = false
     
+    @AppStorage("hideConnectionStatusInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
+    private var hideConnectionStatusInWidget: Bool = false
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Header
-            HStack {
-                Text(hidePhoneNumberInWidget ? "" : subscriberID)
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.secondary)
-                Spacer()
-                if let summary = entry.usageSummary {
-                    Text(summary.status)
-                        .font(.system(size: 10, weight: .bold))
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(summary.statusColor.opacity(0.15))
-                        .foregroundColor(summary.statusColor)
-                        .cornerRadius(4)
+            if !hidePhoneNumberInWidget || (!hideConnectionStatusInWidget && entry.usageSummary != nil) {
+                HStack {
+                    Text(hidePhoneNumberInWidget ? "" : subscriberID)
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    if !hideConnectionStatusInWidget, let summary = entry.usageSummary {
+                        Text(summary.status)
+                            .font(.system(size: 10, weight: .bold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(summary.statusColor.opacity(0.15))
+                            .foregroundColor(summary.statusColor)
+                            .cornerRadius(4)
+                    }
                 }
             }
             

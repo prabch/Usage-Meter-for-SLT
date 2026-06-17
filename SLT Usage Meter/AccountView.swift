@@ -20,6 +20,9 @@ struct AccountView: View {
     @AppStorage("invertProgressBar", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
     private var invertProgressBar: Bool = false
     
+    @AppStorage("hideConnectionStatusInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
+    private var hideConnectionStatusInWidget: Bool = false
+    
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
@@ -53,6 +56,23 @@ struct AccountView: View {
                             }
                             Spacer()
                             Toggle("Hide Phone Number", isOn: $hidePhoneNumberInWidget)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                        }
+                        .padding()
+                        
+                        Divider()
+                            .padding(.leading)
+                            
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Hide Connection Status")
+                                Text("Hides the status badge in widgets.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Toggle("Hide Connection Status", isOn: $hideConnectionStatusInWidget)
                                 .labelsHidden()
                                 .toggleStyle(.switch)
                         }
@@ -162,6 +182,9 @@ struct AccountView: View {
             WidgetCenter.shared.reloadAllTimelines()
         }
         .onChange(of: invertProgressBar) { _ in
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        .onChange(of: hideConnectionStatusInWidget) { _ in
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
