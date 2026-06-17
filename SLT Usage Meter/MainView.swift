@@ -57,6 +57,17 @@ struct MainView: View {
                     .fontWeight(.bold)
                 Spacer()
                 
+                Button(action: {
+                    Task {
+                        await refreshData()
+                    }
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.title3)
+                        .padding(4)
+                }
+                .buttonStyle(.borderless)
+                
                 Menu {
                     ForEach(accounts) { account in
                         Button(action: { selectedAccount = account }) {
@@ -144,19 +155,31 @@ struct MainView: View {
                 }
             }
             
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    ForEach(accounts) { account in
-                        Button(action: { selectedAccount = account }) {
-                            if selectedAccount?.telephoneno == account.telephoneno {
-                                Label(account.telephoneno, systemImage: "checkmark")
-                            } else {
-                                Text(account.telephoneno)
-                            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 16) {
+                    if #available(iOS 16.0, *) {
+                        // Pull to refresh is supported natively
+                    } else {
+                        Button(action: {
+                            Task { await refreshData() }
+                        }) {
+                            Image(systemName: "arrow.clockwise")
                         }
                     }
-                } label: {
-                    Image(systemName: "person.circle")
+                    
+                    Menu {
+                        ForEach(accounts) { account in
+                            Button(action: { selectedAccount = account }) {
+                                if selectedAccount?.telephoneno == account.telephoneno {
+                                    Label(account.telephoneno, systemImage: "checkmark")
+                                } else {
+                                    Text(account.telephoneno)
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "person.circle")
+                    }
                 }
             }
         }
@@ -592,7 +615,8 @@ struct ServiceInfoCard: View {
                 }
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color.blue.opacity(0.05)))
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(0.05)))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1), lineWidth: 1))
         }
         .padding(.horizontal)
     }
