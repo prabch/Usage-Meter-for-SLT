@@ -132,6 +132,11 @@ struct MainView: View {
                     Text("Usage Meter for SLT")
                         .font(.headline)
                         .fontWeight(.semibold)
+                        // iOS 15 needs explicit padding when using Spacer in principal placement
+                        .padding(.leading, {
+                            if #available(iOS 16.0, *) { return 0 }
+                            else { return 16 }
+                        }())
                     Spacer()
                 }
             }
