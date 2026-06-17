@@ -13,7 +13,7 @@ import WidgetKit
 
 struct LoginView: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var email: String = ""
+    @State private var username: String = ""
     @State private var password: String = ""
     @State private var accessToken: String = ""
     @State private var refreshToken: String = ""
@@ -38,7 +38,7 @@ struct LoginView: View {
     }
 
     private var instructionText: some View {
-        Text("Use the same email and password you use for the **[myslt.slt.lk](https://myslt.slt.lk)** portal")
+        Text("Use the same email or phone number and password you use for the **[myslt.slt.lk](https://myslt.slt.lk)** portal")
             .font(.caption)
             .foregroundColor(.primary.opacity(0.7))
             .tint(.blue)
@@ -90,13 +90,15 @@ struct LoginView: View {
                         VStack(spacing: 24) {
                             // Instructions
                             VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 6) {
+                                HStack(alignment: .top, spacing: 6) {
                                     Image(systemName: "info.circle.fill")
                                         .foregroundColor(.blue)
-                                    Text("Login with your MySLT credentials")
+                                        .padding(.top, 2)
+                                    Text("Login with your MySLT\u{00A0}credentials")
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.primary)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                                 
                                 instructionText
@@ -106,14 +108,14 @@ struct LoginView: View {
                             .background(Color.blue.opacity(0.1))
                             .cornerRadius(12)
                             
-                            // Email Field
+                            // Username Field
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Email")
+                                Text("Email or Phone Number")
                                     .font(.subheadline)
                                     .fontWeight(.medium)
                                     .foregroundColor(.primary)
                                 
-                                TextField("Enter your email", text: $email)
+                                TextField("Enter your email or phone number", text: $username)
                                     .textFieldStyle(.plain)
                                     .padding()
                                     .background(Color.gray.opacity(0.1))
@@ -121,7 +123,6 @@ struct LoginView: View {
                                     .disableAutocorrection(true)
                                     #if os(iOS)
                                     .autocapitalization(.none)
-                                    .keyboardType(.emailAddress)
                                     #endif
                             }
                             
@@ -145,7 +146,7 @@ struct LoginView: View {
                                             .opacity(isPasswordVisible ? 1 : 0)
                                             .allowsHitTesting(isPasswordVisible)
                                             .onSubmit {
-                                                if !email.isEmpty && !password.isEmpty { login() }
+                                                if !username.isEmpty && !password.isEmpty { login() }
                                             }
                                             
                                         SecureField("Enter your password", text: $password)
@@ -155,7 +156,7 @@ struct LoginView: View {
                                             .opacity(isPasswordVisible ? 0 : 1)
                                             .allowsHitTesting(!isPasswordVisible)
                                             .onSubmit {
-                                                if !email.isEmpty && !password.isEmpty { login() }
+                                                if !username.isEmpty && !password.isEmpty { login() }
                                             }
                                     }
                                     
@@ -209,10 +210,11 @@ struct LoginView: View {
                                     }
                             }
                             .buttonStyle(.plain)
-                            .disabled(isLoading || email.isEmpty || password.isEmpty)
-                            .opacity((isLoading || email.isEmpty || password.isEmpty) ? 0.6 : 1.0)
+                            .disabled(isLoading || username.isEmpty || password.isEmpty)
+                            .opacity((isLoading || username.isEmpty || password.isEmpty) ? 0.6 : 1.0)
                         }
                         .padding(24)
+                        .frame(maxWidth: 450)
                         .background(cardBackgroundColor)
                         .cornerRadius(20)
                         .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
@@ -220,6 +222,14 @@ struct LoginView: View {
                         .padding(.bottom, 20)
                         
                         Spacer(minLength: 0)
+                        
+                        Text("Google and Facebook login are not supported. Please use your email or phone number to log in.")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.9))
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, 32)
+                            .padding(.bottom, 16)
                         
                         // Disclaimer at very bottom
                         VStack(spacing: 4) {
@@ -259,7 +269,7 @@ struct LoginView: View {
         
         Task {
             do {
-                let token = try await NetworkManager.shared.login(username: email, password: password)
+                let token = try await NetworkManager.shared.login(username: username, password: password)
                 
                 print("LoginView: Login success")
                 DispatchQueue.main.async {
@@ -274,7 +284,7 @@ struct LoginView: View {
                     // Map generic errors to user friendly messages if needed
                     if let nsError = error as NSError? {
                          if nsError.domain == "Auth" && (nsError.code == 401 || nsError.code == 403) {
-                             self.errorMessage = "Invalid credentials. Please check your email and password."
+                             self.errorMessage = "Invalid credentials. Please check your username and password."
                          } else {
                              self.errorMessage = error.localizedDescription
                          }
