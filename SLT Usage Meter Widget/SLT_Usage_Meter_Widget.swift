@@ -197,11 +197,11 @@ struct UsageView: View {
                 Spacer()
                 if let summary = entry.usageSummary {
                     Text(summary.status)
-                        .font(.caption2)
+                        .font(.system(size: 10, weight: .bold))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(summary.statusColor)
-                        .foregroundColor(.white)
+                        .background(summary.statusColor.opacity(0.15))
+                        .foregroundColor(summary.statusColor)
                         .cornerRadius(4)
                 }
             }
@@ -265,8 +265,6 @@ struct UsageView: View {
                         .font(.caption)
                 }
             }
-            
-            Spacer()
         }
         .widgetBackground(Color.gray.opacity(0.1))
     }
