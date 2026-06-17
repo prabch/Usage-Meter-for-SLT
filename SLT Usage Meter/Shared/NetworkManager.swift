@@ -103,7 +103,14 @@ class NetworkManager {
         
         let (data, _) = try await execute(request: finalRequest)
         let response = try JSONDecoder().decode(AccountResponse.self, from: data)
-        return response.dataBundle ?? []
+        let accounts = response.dataBundle ?? []
+        
+        if let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName) {
+            let phoneNumbers = accounts.map { $0.telephoneno }
+            sharedDefaults.set(phoneNumbers, forKey: AppConstants.Keys.cachedAccounts)
+        }
+        
+        return accounts
     }
     
     func fetchServiceDetails(telephoneNo: String) async throws -> ServiceDetailBundle? {

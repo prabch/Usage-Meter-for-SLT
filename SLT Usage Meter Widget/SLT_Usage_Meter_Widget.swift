@@ -30,9 +30,14 @@ struct Provider: AppIntentTimelineProvider {
         // 2. Determine Subscriber ID
         var subscriberID = configuration.account?.id
         if subscriberID == nil {
-            // Fetch accounts to find a default
-            if let accounts = try? await NetworkManager.shared.fetchAccounts(), let first = accounts.first {
-                subscriberID = first.telephoneno
+            let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName)
+            let cachedPhones = sharedDefaults?.stringArray(forKey: AppConstants.Keys.cachedAccounts) ?? []
+            subscriberID = cachedPhones.first
+            
+            if subscriberID == nil {
+                if let accounts = try? await NetworkManager.shared.fetchAccounts(), let first = accounts.first {
+                    subscriberID = first.telephoneno
+                }
             }
         }
         
@@ -171,11 +176,16 @@ struct LegacyProvider: IntentTimelineProvider {
                  return
             }
             
-            // 2. Determine Subscriber ID (Default to first or from configuration)
             var subscriberID: String? = configuration.account
             if subscriberID == nil || subscriberID?.isEmpty == true {
-                if let accounts = try? await NetworkManager.shared.fetchAccounts(), let first = accounts.first {
-                    subscriberID = first.telephoneno
+                let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName)
+                let cachedPhones = sharedDefaults?.stringArray(forKey: AppConstants.Keys.cachedAccounts) ?? []
+                subscriberID = cachedPhones.first
+                
+                if subscriberID == nil {
+                    if let accounts = try? await NetworkManager.shared.fetchAccounts(), let first = accounts.first {
+                        subscriberID = first.telephoneno
+                    }
                 }
             }
             

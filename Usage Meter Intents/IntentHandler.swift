@@ -14,6 +14,16 @@ class IntentHandler: INExtension, LegacyConfigurationIntentHandling {
     }
     
     func provideAccountOptionsCollection(for intent: LegacyConfigurationIntent, with completion: @escaping (INObjectCollection<NSString>?, Error?) -> Void) {
+        let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName)
+        let cachedPhones = sharedDefaults?.stringArray(forKey: AppConstants.Keys.cachedAccounts) ?? []
+        
+        if !cachedPhones.isEmpty {
+            let phoneNumbers = cachedPhones.map { NSString(string: $0) }
+            let collection = INObjectCollection(items: phoneNumbers)
+            completion(collection, nil)
+            return
+        }
+        
         Task {
             do {
                 let accounts = try await NetworkManager.shared.fetchAccounts()

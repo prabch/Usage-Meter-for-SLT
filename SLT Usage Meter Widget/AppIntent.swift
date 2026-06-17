@@ -48,14 +48,30 @@ struct SubscriberEntity: AppEntity {
 @available(iOS 16.0, macOS 13.0, *)
 struct SubscriberQuery: EntityQuery {
     func entities(for identifiers: [SubscriberEntity.ID]) async throws -> [SubscriberEntity] {
-        let accounts = try? await NetworkManager.shared.fetchAccounts()
-        return accounts?.filter { identifiers.contains($0.telephoneno) }
-            .map { SubscriberEntity(id: $0.telephoneno, telephoneNo: $0.telephoneno) } ?? []
+        let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName)
+        var cachedPhones = sharedDefaults?.stringArray(forKey: AppConstants.Keys.cachedAccounts) ?? []
+        
+        if cachedPhones.isEmpty {
+            if let accounts = try? await NetworkManager.shared.fetchAccounts() {
+                cachedPhones = accounts.map { $0.telephoneno }
+            }
+        }
+        
+        return cachedPhones.filter { identifiers.contains($0) }
+            .map { SubscriberEntity(id: $0, telephoneNo: $0) }
     }
     
     func suggestedEntities() async throws -> [SubscriberEntity] {
-        let accounts = try? await NetworkManager.shared.fetchAccounts()
-        return accounts?.map { SubscriberEntity(id: $0.telephoneno, telephoneNo: $0.telephoneno) } ?? []
+        let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName)
+        var cachedPhones = sharedDefaults?.stringArray(forKey: AppConstants.Keys.cachedAccounts) ?? []
+        
+        if cachedPhones.isEmpty {
+            if let accounts = try? await NetworkManager.shared.fetchAccounts() {
+                cachedPhones = accounts.map { $0.telephoneno }
+            }
+        }
+        
+        return cachedPhones.map { SubscriberEntity(id: $0, telephoneNo: $0) }
     }
     
     func defaultResult() async -> SubscriberEntity? {
