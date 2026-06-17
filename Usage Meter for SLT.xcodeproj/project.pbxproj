@@ -26,8 +26,6 @@
 		3368CB912F1CE17200F26990 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3368CB8D2F1CE17200F26990 /* Secrets.swift */; };
 		339482F52FE2620600627A9A /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 339482F42FE2620600627A9A /* Intents.framework */; };
 		339482FC2FE2620600627A9A /* Usage Meter Intents.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 339482F32FE2620600627A9A /* Usage Meter Intents.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		339483022FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */; };
-		339483032FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */; };
 		339535F82F0C4D7100DF1AC2 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F52F0C4D7100DF1AC2 /* Models.swift */; };
 		339535F92F0C4D7100DF1AC2 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F42F0C4D7100DF1AC2 /* Constants.swift */; };
 		339535FA2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
@@ -99,13 +97,11 @@
 		335B8A922C312683002CC442 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		335B8AA62C3127B4002CC442 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		335B8AA82C3127B4002CC442 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		335DC32C2F01555A003FF565 /* SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements"; sourceTree = "<group>"; };
 		3367074F2F01519000403CAB /* SLT Usage Meter WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "SLT Usage Meter WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3368CB8D2F1CE17200F26990 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		3368CB932F1CE1B700F26990 /* Secrets.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.example.swift; sourceTree = "<group>"; };
 		339482F32FE2620600627A9A /* Usage Meter Intents.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Usage Meter Intents.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		339482F42FE2620600627A9A /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
-		339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = WidgetConfiguration.intentdefinition; sourceTree = "<group>"; };
 		339535F42F0C4D7100DF1AC2 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		339535F52F0C4D7100DF1AC2 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
@@ -128,11 +124,18 @@
 			);
 			target = 339482F22FE2620600627A9A /* Usage Meter Intents */;
 		};
+		33EF3E0D2FE2E1C9001CF21F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WidgetConfiguration.intentdefinition,
+			);
+			target = 3367074E2F01519000403CAB /* SLT Usage Meter WidgetExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		336707522F01519100403CAB /* SLT Usage Meter Widget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (336707612F01519200403CAB /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "SLT Usage Meter Widget"; sourceTree = "<group>"; };
-		339482F62FE2620600627A9A /* Usage Meter Intents */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (339482FF2FE2620600627A9A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "Usage Meter Intents"; sourceTree = "<group>"; };
+		339482F62FE2620600627A9A /* Usage Meter Intents */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (33EF3E0D2FE2E1C9001CF21F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 339482FF2FE2620600627A9A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "Usage Meter Intents"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,8 +169,6 @@
 		335B8A672C312530002CC442 = {
 			isa = PBXGroup;
 			children = (
-				339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */,
-				335DC32C2F01555A003FF565 /* SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements */,
 				335B8A722C312530002CC442 /* SLT Usage Meter */,
 				336707522F01519100403CAB /* SLT Usage Meter Widget */,
 				339482F62FE2620600627A9A /* Usage Meter Intents */,
@@ -394,7 +395,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				339483022FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */,
 				33EF3DF02FE2D0CC001CF21F /* CacheManager.swift in Sources */,
 				339535F82F0C4D7100DF1AC2 /* Models.swift in Sources */,
 				339535F92F0C4D7100DF1AC2 /* Constants.swift in Sources */,
@@ -407,7 +407,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				339483032FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */,
 				64B1C1A1D81D27742A5D0AB1 /* Models.swift in Sources */,
 				0039D7282C57ADECC3FC50F7 /* NetworkManager.swift in Sources */,
 				C8AE43B60D0180714908633C /* Secrets.swift in Sources */,
