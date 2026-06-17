@@ -447,7 +447,7 @@ struct SLT_Usage_Meter_Widget: Widget {
                 SLT_Usage_Meter_WidgetEntryView(entry: entry)
             }
             .configurationDisplayName("Usage Widget")
-            .description("Select an account to view data usage")
+            .description("Select an account to peep your broadband usage")
             .supportedFamilies([.systemSmall, .systemMedium])
         } else {
             return StaticConfiguration(kind: kind, provider: LegacyStaticProvider()) { entry in
@@ -468,7 +468,7 @@ struct SLT_Usage_Meter_Widget_V2: Widget {
             SLT_Usage_Meter_WidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Usage Widget")
-        .description("Select an account to view data usage with display preferences.")
+        .description("Select an account to peep your broadband usage")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
