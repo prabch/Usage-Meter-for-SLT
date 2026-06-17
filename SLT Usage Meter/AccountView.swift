@@ -6,12 +6,19 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 struct AccountView: View {
     let serviceDetail: ServiceDetailBundle?
     let logoutAction: () -> Void
     
     @State private var showingLogoutConfirmation = false
+    
+    @AppStorage("hidePhoneNumberInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
+    private var hidePhoneNumberInWidget: Bool = false
+    
+    @AppStorage("invertProgressBar", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
+    private var invertProgressBar: Bool = false
     
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -27,6 +34,40 @@ struct AccountView: View {
                     Text("Service details unavailable")
                         .foregroundColor(.secondary)
                         .padding(.top, 50)
+                }
+                
+                // Preferences Section
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Preferences")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .padding(.horizontal)
+                    
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("Hide Phone Number")
+                            Spacer()
+                            Toggle("Hide Phone Number", isOn: $hidePhoneNumberInWidget)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                        }
+                        .padding()
+                        
+                        Divider()
+                            .padding(.leading)
+                        
+                        HStack {
+                            Text("Invert Progress Bars")
+                            Spacer()
+                            Toggle("Invert Progress Bars", isOn: $invertProgressBar)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                        }
+                        .padding()
+                    }
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(0.05)))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.1), lineWidth: 1))
+                    .padding(.horizontal)
                 }
                 
                 Button(action: {
@@ -106,6 +147,12 @@ struct AccountView: View {
                 Spacer()
             }
             .padding(.vertical)
+        }
+        .onChange(of: hidePhoneNumberInWidget) { _ in
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        .onChange(of: invertProgressBar) { _ in
+            WidgetCenter.shared.reloadAllTimelines()
         }
     }
 }

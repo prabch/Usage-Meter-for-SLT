@@ -8,6 +8,17 @@
 import Foundation
 import WidgetKit
 
+enum APIError: LocalizedError {
+    case decodingFailed(message: String, rawResponse: String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .decodingFailed(let message, _):
+            return message
+        }
+    }
+}
+
 class NetworkManager {
     static let shared = NetworkManager()
     
@@ -110,8 +121,13 @@ class NetworkManager {
         let request = try createRequest(url: url)
         
         let (data, _) = try await execute(request: request)
-        let response = try JSONDecoder().decode(UsageSummaryResponse.self, from: data)
-        return response.dataBundle
+        do {
+            let response = try JSONDecoder().decode(UsageSummaryResponse.self, from: data)
+            return response.dataBundle
+        } catch {
+            let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
+            throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+        }
     }
     
     func fetchVASBundles(subscriberID: String) async throws -> [UsageDetail] {
@@ -120,8 +136,13 @@ class NetworkManager {
         let request = try createRequest(url: url)
         
         let (data, _) = try await execute(request: request)
-        let response = try JSONDecoder().decode(UsageDataResponse.self, from: data)
-        return response.dataBundle?.usageDetails ?? []
+        do {
+            let response = try JSONDecoder().decode(UsageDataResponse.self, from: data)
+            return response.dataBundle?.usageDetails ?? []
+        } catch {
+            let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
+            throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+        }
     }
     
     func fetchCurrentDailyUsage(subscriberID: String, billDate: String = "01") async throws -> DailyUsageDataBundle? {
@@ -160,6 +181,12 @@ class NetworkManager {
     private func convertToInternationalFormat(_ phoneNumber: String) -> String {
         let cleaned = phoneNumber.replacingOccurrences(of: " ", with: "")
                                  .replacingOccurrences(of: "-", with: "")
+        
+        let letters = CharacterSet.letters
+        if cleaned.rangeOfCharacter(from: letters) != nil {
+            return cleaned
+        }
+        
         if cleaned.hasPrefix("0") {
             return "94" + cleaned.dropFirst()
         }

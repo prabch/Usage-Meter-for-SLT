@@ -29,6 +29,7 @@
 		339535FB2F0C4D7100DF1AC2 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F52F0C4D7100DF1AC2 /* Models.swift */; };
 		339535FC2F0C4D7100DF1AC2 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F42F0C4D7100DF1AC2 /* Constants.swift */; };
 		339535FD2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
+		33CC248B2FDB4F5F001BB188 /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC248A2FDB4F5F001BB188 /* MailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -88,6 +89,7 @@
 		339535F42F0C4D7100DF1AC2 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		339535F52F0C4D7100DF1AC2 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		33CC248A2FDB4F5F001BB188 /* MailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -184,6 +186,7 @@
 		339535F72F0C4D7100DF1AC2 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				33CC248A2FDB4F5F001BB188 /* MailView.swift */,
 				3368CB932F1CE1B700F26990 /* Secrets.example.swift */,
 				3368CB8D2F1CE17200F26990 /* Secrets.swift */,
 				339535F42F0C4D7100DF1AC2 /* Constants.swift */,
@@ -311,6 +314,7 @@
 				339535FC2F0C4D7100DF1AC2 /* Constants.swift in Sources */,
 				339535FD2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */,
 				335B8A8A2C312677002CC442 /* LoginView.swift in Sources */,
+				33CC248B2FDB4F5F001BB188 /* MailView.swift in Sources */,
 				335B8A762C312530002CC442 /* Persistence.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -490,8 +494,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = prabch.sltusage;
 				PRODUCT_NAME = "Usage Meter for SLT";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -538,8 +542,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = prabch.sltusage;
 				PRODUCT_NAME = "Usage Meter for SLT";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -584,8 +588,8 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage.widget;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = "prabch.sltusage.SLT-Usage-Meter-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -637,8 +641,8 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.danuja.sltusage.widget;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = "prabch.sltusage.SLT-Usage-Meter-Widget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;

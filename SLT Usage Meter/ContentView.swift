@@ -12,11 +12,12 @@ import WidgetKit
 struct ContentView: View {
     @State private var isLoggedIn: Bool = false
     @State private var accessToken: String?
+    @State private var requestedAccountID: String?
 
     var body: some View {
         Group {
             if isLoggedIn {
-                MainView(accessToken: accessToken ?? "", logoutAction: logout)
+                MainView(accessToken: accessToken ?? "", logoutAction: logout, requestedAccountID: $requestedAccountID)
             } else {
                 LoginView(loginAction: { token in
                     print("ContentView: Login successful. Received token: \(token)")
@@ -44,6 +45,13 @@ struct ContentView: View {
             ) { _ in
                 print("ContentView: Token expired notification received. Logging out...")
                 logout()
+            }
+        }
+        .onOpenURL { url in
+            if url.scheme == "sltusage" && url.host == "account" {
+                let accountID = url.lastPathComponent
+                print("ContentView: Opened from widget with account ID: \(accountID)")
+                self.requestedAccountID = accountID
             }
         }
     }

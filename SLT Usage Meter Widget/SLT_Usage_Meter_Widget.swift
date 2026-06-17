@@ -44,8 +44,14 @@ struct Provider: AppIntentTimelineProvider {
         
         // 3. Fetch Data
         do {
-            async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: subID)
-            async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: subID)
+            var activeServiceID = subID
+            if let serviceDetail = try? await NetworkManager.shared.fetchServiceDetails(telephoneNo: subID),
+               let bbService = serviceDetail.listofBBService.first {
+                activeServiceID = bbService.serviceID
+            }
+
+            async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: activeServiceID)
+            async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: activeServiceID)
             
             let (usageSummary, vasBundles) = try await (summary, vas)
             
@@ -108,8 +114,14 @@ struct LegacyProvider: TimelineProvider {
             
             // 3. Fetch Data
             do {
-                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: subID)
-                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: subID)
+                var activeServiceID = subID
+                if let serviceDetail = try? await NetworkManager.shared.fetchServiceDetails(telephoneNo: subID),
+                   let bbService = serviceDetail.listofBBService.first {
+                    activeServiceID = bbService.serviceID
+                }
+
+                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: activeServiceID)
+                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: activeServiceID)
                 
                 let (usageSummary, vasBundles) = try await (summary, vas)
                 
@@ -139,6 +151,7 @@ struct SLT_Usage_Meter_WidgetEntryView : View {
                 LoginPromptView()
             } else if let subID = entry.subscriberID {
                  UsageView(entry: entry, subscriberID: subID)
+                    .widgetURL(URL(string: "sltusage://account/\(subID)"))
             } else {
                 Text("No accounts found")
                     .font(.caption)
@@ -168,11 +181,14 @@ struct UsageView: View {
     let entry: SimpleEntry
     let subscriberID: String
     
+    @AppStorage("hidePhoneNumberInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
+    private var hidePhoneNumberInWidget: Bool = false
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Header
             HStack {
-                Text(subscriberID)
+                Text(hidePhoneNumberInWidget ? "Usage Meter for SLT" : subscriberID)
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(.secondary)
@@ -190,30 +206,50 @@ struct UsageView: View {
             
             // Usage Bars
             if let summary = entry.usageSummary {
-                // Main Package
-                if let packageInfo = summary.myPackageInfo {
-                    ForEach(packageInfo.usageDetails.prefix(2)) { usage in
-                        WidgetProgressBar(name: usage.name, used: usage.used, limit: usage.limit, unit: usage.volumeUnit, color: .blue)
+                let hasNoAddons = summary.bonusDataSummary == nil && summary.extraGbDataSummary == nil && entry.vasBundles.isEmpty
+                let mainUsage = summary.myPackageInfo?.usageDetails.first
+                
+                if hasNoAddons, let usage = mainUsage, usage.limit == nil {
+                    Spacer()
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(usage.name)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.secondary)
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text(usage.used)
+                                .font(.system(size: 34, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                            Text(usage.volumeUnit)
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .foregroundColor(.secondary)
+                        }
                     }
-                }
-                
-                // Data Packs
-                if let bonus = summary.bonusDataSummary {
-                    WidgetProgressBar(name: "Bonus Data", used: bonus.used, limit: bonus.limit, unit: bonus.volumeUnit, color: .purple)
-                }
-                if let extra = summary.extraGbDataSummary {
-                    WidgetProgressBar(name: "Extra GB", used: extra.used, limit: extra.limit, unit: extra.volumeUnit, color: .orange)
-                 }
-                
-                // VAS Bundles
-                ForEach(entry.vasBundles.prefix(3)) { bundle in
-                    WidgetProgressBar(name: bundle.name, used: bundle.used, limit: bundle.limit, unit: bundle.volumeUnit, color: .green)
-                }
-                
-                if entry.vasBundles.isEmpty && summary.myPackageInfo == nil && summary.bonusDataSummary == nil && summary.extraGbDataSummary == nil {
-                     Text("No usage info")
-                         .font(.caption)
-                         .foregroundColor(.secondary)
+                } else {
+                    // Main Package
+                    if let packageInfo = summary.myPackageInfo {
+                        ForEach(packageInfo.usageDetails.prefix(2)) { usage in
+                            WidgetProgressBar(name: usage.name, used: usage.used, limit: usage.limit, unit: usage.volumeUnit, color: .blue)
+                        }
+                    }
+                    
+                    // Data Packs
+                    if let bonus = summary.bonusDataSummary {
+                        WidgetProgressBar(name: "Bonus Data", used: bonus.used, limit: bonus.limit, unit: bonus.volumeUnit, color: .purple)
+                    }
+                    if let extra = summary.extraGbDataSummary {
+                        WidgetProgressBar(name: "Extra GB", used: extra.used, limit: extra.limit, unit: extra.volumeUnit, color: .orange)
+                     }
+                    
+                    // VAS Bundles
+                    ForEach(entry.vasBundles.prefix(3)) { bundle in
+                        WidgetProgressBar(name: bundle.name, used: bundle.used, limit: bundle.limit, unit: bundle.volumeUnit, color: .green)
+                    }
+                    
+                    if entry.vasBundles.isEmpty && summary.myPackageInfo == nil && summary.bonusDataSummary == nil && summary.extraGbDataSummary == nil {
+                         Text("No usage info")
+                             .font(.caption)
+                             .foregroundColor(.secondary)
+                    }
                 }
                 
             } else {
@@ -241,6 +277,9 @@ struct WidgetProgressBar: View {
     let unit: String
     let color: Color
     
+    @AppStorage("invertProgressBar", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
+    private var invertProgressBar: Bool = false
+    
     var progress: Double {
         guard let limitStr = limit, let limitVal = Double(limitStr), limitVal > 0, let usedVal = Double(used) else { return 0 }
         return min(1.0, usedVal / limitVal)
@@ -254,11 +293,19 @@ struct WidgetProgressBar: View {
                     .lineLimit(1)
                 Spacer()
                 if let limit = limit {
-                    Text("\(used) / \(limit) \(unit)")
-                        .font(.system(size: 9))
-                        .foregroundColor(.secondary)
+                    if invertProgressBar, let limitVal = Double(limit), let usedVal = Double(used) {
+                        let remaining = max(0, limitVal - usedVal)
+                        let remainingStr = String(format: "%.1f", remaining).formattedVolume()
+                        Text("\(remainingStr) / \(limit.formattedVolume()) \(unit)")
+                            .font(.system(size: 9))
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("\(used.formattedVolume()) / \(limit.formattedVolume()) \(unit)")
+                            .font(.system(size: 9))
+                            .foregroundColor(.secondary)
+                    }
                 } else {
-                     Text("\(used) \(unit)")
+                     Text("\(used.formattedVolume()) \(unit)")
                         .font(.system(size: 9))
                         .foregroundColor(.secondary)
                 }
@@ -272,7 +319,7 @@ struct WidgetProgressBar: View {
                     if limit != nil {
                         Capsule()
                             .fill(color)
-                            .frame(width: geo.size.width * progress)
+                            .frame(width: geo.size.width * (invertProgressBar ? (1.0 - progress) : progress))
                     } else {
                          Capsule()
                             .fill(color.opacity(0.5))
