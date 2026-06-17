@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0039D7282C57ADECC3FC50F7 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
+		30BAAA68952C74EC8BE7336C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F42F0C4D7100DF1AC2 /* Constants.swift */; };
 		335B8A742C312530002CC442 /* SLT_Usage_MeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A732C312530002CC442 /* SLT_Usage_MeterApp.swift */; };
 		335B8A762C312530002CC442 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A752C312530002CC442 /* Persistence.swift */; };
 		335B8A792C312530002CC442 /* SLT_Usage_Meter.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A772C312530002CC442 /* SLT_Usage_Meter.xcdatamodeld */; };
@@ -22,6 +24,10 @@
 		3367075E2F01519200403CAB /* SLT Usage Meter WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3367074F2F01519000403CAB /* SLT Usage Meter WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3368CB8F2F1CE17200F26990 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3368CB8D2F1CE17200F26990 /* Secrets.swift */; };
 		3368CB912F1CE17200F26990 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3368CB8D2F1CE17200F26990 /* Secrets.swift */; };
+		339482F52FE2620600627A9A /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 339482F42FE2620600627A9A /* Intents.framework */; };
+		339482FC2FE2620600627A9A /* Usage Meter Intents.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 339482F32FE2620600627A9A /* Usage Meter Intents.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		339483022FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */; };
+		339483032FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */; };
 		339535F82F0C4D7100DF1AC2 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F52F0C4D7100DF1AC2 /* Models.swift */; };
 		339535F92F0C4D7100DF1AC2 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F42F0C4D7100DF1AC2 /* Constants.swift */; };
 		339535FA2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
@@ -29,6 +35,8 @@
 		339535FC2F0C4D7100DF1AC2 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F42F0C4D7100DF1AC2 /* Constants.swift */; };
 		339535FD2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
 		33CC248B2FDB4F5F001BB188 /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC248A2FDB4F5F001BB188 /* MailView.swift */; };
+		64B1C1A1D81D27742A5D0AB1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F52F0C4D7100DF1AC2 /* Models.swift */; };
+		C8AE43B60D0180714908633C /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3368CB8D2F1CE17200F26990 /* Secrets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +46,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 3367074E2F01519000403CAB;
 			remoteInfo = "SLT Usage Meter WidgetExtension";
+		};
+		339482FA2FE2620600627A9A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 335B8A682C312530002CC442 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 339482F22FE2620600627A9A;
+			remoteInfo = "Usage Meter Intents";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -58,6 +73,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				339482FC2FE2620600627A9A /* Usage Meter Intents.appex in Embed Foundation Extensions */,
 				3367075E2F01519200403CAB /* SLT Usage Meter WidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -80,10 +96,13 @@
 		335B8A922C312683002CC442 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		335B8AA62C3127B4002CC442 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		335B8AA82C3127B4002CC442 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		335DC32C2F01555A003FF565 /* SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements"; sourceTree = "<group>"; };
+		335DC32C2F01555A003FF565 /* SLT Usage Meter WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements"; sourceTree = "<group>"; };
 		3367074F2F01519000403CAB /* SLT Usage Meter WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "SLT Usage Meter WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3368CB8D2F1CE17200F26990 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		3368CB932F1CE1B700F26990 /* Secrets.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.example.swift; sourceTree = "<group>"; };
+		339482F32FE2620600627A9A /* Usage Meter Intents.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Usage Meter Intents.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		339482F42FE2620600627A9A /* Intents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Intents.framework; path = System/Library/Frameworks/Intents.framework; sourceTree = SDKROOT; };
+		339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = WidgetConfiguration.intentdefinition; sourceTree = "<group>"; };
 		339535F42F0C4D7100DF1AC2 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		339535F52F0C4D7100DF1AC2 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
@@ -91,17 +110,47 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		336707612F01519200403CAB /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		336707612F01519200403CAB /* Exceptions for "SLT Usage Meter Widget" folder in "SLT Usage Meter WidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 3367074E2F01519000403CAB /* SLT Usage Meter WidgetExtension */;
 		};
+		339482FF2FE2620600627A9A /* Exceptions for "Usage Meter Intents" folder in "Usage Meter Intents" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 339482F22FE2620600627A9A /* Usage Meter Intents */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		336707522F01519100403CAB /* SLT Usage Meter Widget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (336707612F01519200403CAB /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "SLT Usage Meter Widget"; sourceTree = "<group>"; };
+		336707522F01519100403CAB /* SLT Usage Meter Widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				336707612F01519200403CAB /* Exceptions for "SLT Usage Meter Widget" folder in "SLT Usage Meter WidgetExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "SLT Usage Meter Widget";
+			sourceTree = "<group>";
+		};
+		339482F62FE2620600627A9A /* Usage Meter Intents */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				339482FF2FE2620600627A9A /* Exceptions for "Usage Meter Intents" folder in "Usage Meter Intents" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "Usage Meter Intents";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,15 +170,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		339482F02FE2620600627A9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				339482F52FE2620600627A9A /* Intents.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		335B8A672C312530002CC442 = {
 			isa = PBXGroup;
 			children = (
-				335DC32C2F01555A003FF565 /* SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements */,
+				339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */,
+				335DC32C2F01555A003FF565 /* SLT Usage Meter WidgetExtension.entitlements */,
 				335B8A722C312530002CC442 /* SLT Usage Meter */,
 				336707522F01519100403CAB /* SLT Usage Meter Widget */,
+				339482F62FE2620600627A9A /* Usage Meter Intents */,
 				335B8AA52C3127B4002CC442 /* Frameworks */,
 				335B8A712C312530002CC442 /* Products */,
 			);
@@ -140,6 +199,7 @@
 			children = (
 				335B8A702C312530002CC442 /* Usage Meter for SLT.app */,
 				3367074F2F01519000403CAB /* SLT Usage Meter WidgetExtension.appex */,
+				339482F32FE2620600627A9A /* Usage Meter Intents.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -176,6 +236,7 @@
 			children = (
 				335B8AA62C3127B4002CC442 /* WidgetKit.framework */,
 				335B8AA82C3127B4002CC442 /* SwiftUI.framework */,
+				339482F42FE2620600627A9A /* Intents.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -210,6 +271,7 @@
 			);
 			dependencies = (
 				3367075D2F01519200403CAB /* PBXTargetDependency */,
+				339482FB2FE2620600627A9A /* PBXTargetDependency */,
 			);
 			name = "SLT Usage Meter";
 			productName = "SLT Usage Meter";
@@ -232,10 +294,28 @@
 				336707522F01519100403CAB /* SLT Usage Meter Widget */,
 			);
 			name = "SLT Usage Meter WidgetExtension";
-			packageProductDependencies = (
-			);
 			productName = "SLT Usage Meter WidgetExtension";
 			productReference = 3367074F2F01519000403CAB /* SLT Usage Meter WidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		339482F22FE2620600627A9A /* Usage Meter Intents */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 339483002FE2620600627A9A /* Build configuration list for PBXNativeTarget "Usage Meter Intents" */;
+			buildPhases = (
+				339482EF2FE2620600627A9A /* Sources */,
+				339482F02FE2620600627A9A /* Frameworks */,
+				339482F12FE2620600627A9A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				339482F62FE2620600627A9A /* Usage Meter Intents */,
+			);
+			name = "Usage Meter Intents";
+			productName = "Usage Meter Intents";
+			productReference = 339482F32FE2620600627A9A /* Usage Meter Intents.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -245,7 +325,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2620;
+				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					335B8A6F2C312530002CC442 = {
@@ -253,6 +333,9 @@
 					};
 					3367074E2F01519000403CAB = {
 						CreatedOnToolsVersion = 26.2;
+					};
+					339482F22FE2620600627A9A = {
+						CreatedOnToolsVersion = 26.4;
 					};
 				};
 			};
@@ -271,6 +354,7 @@
 			targets = (
 				335B8A6F2C312530002CC442 /* SLT Usage Meter */,
 				3367074E2F01519000403CAB /* SLT Usage Meter WidgetExtension */,
+				339482F22FE2620600627A9A /* Usage Meter Intents */,
 			);
 		};
 /* End PBXProject section */
@@ -286,6 +370,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		3367074D2F01519000403CAB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		339482F12FE2620600627A9A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -319,10 +410,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				339483022FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */,
 				339535F82F0C4D7100DF1AC2 /* Models.swift in Sources */,
 				339535F92F0C4D7100DF1AC2 /* Constants.swift in Sources */,
 				3368CB8F2F1CE17200F26990 /* Secrets.swift in Sources */,
 				339535FA2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		339482EF2FE2620600627A9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				339483032FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */,
+				64B1C1A1D81D27742A5D0AB1 /* Models.swift in Sources */,
+				0039D7282C57ADECC3FC50F7 /* NetworkManager.swift in Sources */,
+				C8AE43B60D0180714908633C /* Secrets.swift in Sources */,
+				30BAAA68952C74EC8BE7336C /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,6 +437,11 @@
 			isa = PBXTargetDependency;
 			target = 3367074E2F01519000403CAB /* SLT Usage Meter WidgetExtension */;
 			targetProxy = 3367075C2F01519200403CAB /* PBXContainerItemProxy */;
+		};
+		339482FB2FE2620600627A9A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 339482F22FE2620600627A9A /* Usage Meter Intents */;
+			targetProxy = 339482FA2FE2620600627A9A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -651,6 +760,86 @@
 			};
 			name = Release;
 		};
+		339482FD2FE2620600627A9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Usage Meter Intents/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Usage Meter Intents";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = "prabch.sltusage.Usage-Meter-Intents";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		339482FE2FE2620600627A9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Usage Meter Intents/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Usage Meter Intents";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = "prabch.sltusage.Usage-Meter-Intents";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -677,6 +866,15 @@
 			buildConfigurations = (
 				3367075F2F01519200403CAB /* Debug */,
 				336707602F01519200403CAB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		339483002FE2620600627A9A /* Build configuration list for PBXNativeTarget "Usage Meter Intents" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				339482FD2FE2620600627A9A /* Debug */,
+				339482FE2FE2620600627A9A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

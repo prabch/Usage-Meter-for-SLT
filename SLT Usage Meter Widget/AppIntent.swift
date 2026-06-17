@@ -16,6 +16,15 @@ struct ConfigurationAppIntent: WidgetConfigurationIntent {
 
     @Parameter(title: "Account")
     var account: SubscriberEntity?
+
+    @Parameter(title: "Hide Phone Number", default: false)
+    var hidePhoneNumber: Bool
+    
+    @Parameter(title: "Hide Connection Status", default: false)
+    var hideConnectionStatus: Bool
+    
+    @Parameter(title: "Invert Progress Bar", default: false)
+    var invertProgressBar: Bool
 }
 
 @available(iOS 16.0, macOS 13.0, *)

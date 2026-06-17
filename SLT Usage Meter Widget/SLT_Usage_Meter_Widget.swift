@@ -15,7 +15,7 @@ struct Provider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333")
+        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333", hidePhoneNumber: configuration.hidePhoneNumber, hideConnectionStatus: configuration.hideConnectionStatus, invertProgressBar: configuration.invertProgressBar)
     }
     
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
@@ -23,7 +23,7 @@ struct Provider: AppIntentTimelineProvider {
         
         // 1. Check Login
         guard let _ = NetworkManager.shared.accessToken else {
-             let entry = SimpleEntry(date: currentDate, isLoggedIn: false, usageSummary: nil, vasBundles: [], subscriberID: nil)
+             let entry = SimpleEntry(date: currentDate, isLoggedIn: false, usageSummary: nil, vasBundles: [], subscriberID: nil, hidePhoneNumber: configuration.hidePhoneNumber, hideConnectionStatus: configuration.hideConnectionStatus, invertProgressBar: configuration.invertProgressBar)
              return Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(3600)))
         }
         
@@ -38,7 +38,7 @@ struct Provider: AppIntentTimelineProvider {
         
         guard let subID = subscriberID else {
             // Logged in but no accounts found
-            let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: nil)
+            let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: nil, hidePhoneNumber: configuration.hidePhoneNumber, hideConnectionStatus: configuration.hideConnectionStatus, invertProgressBar: configuration.invertProgressBar)
             return Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(3600)))
         }
         
@@ -56,14 +56,14 @@ struct Provider: AppIntentTimelineProvider {
             
             let (usageSummary, vasBundles) = try await (summary, vas)
             
-            let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: usageSummary, vasBundles: vasBundles, subscriberID: subID)
+            let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: usageSummary, vasBundles: vasBundles, subscriberID: subID, hidePhoneNumber: configuration.hidePhoneNumber, hideConnectionStatus: configuration.hideConnectionStatus, invertProgressBar: configuration.invertProgressBar)
             
             let refreshDate = Calendar.current.date(byAdding: .minute, value: 30, to: currentDate)!
             return Timeline(entries: [entry], policy: .after(refreshDate))
             
         } catch {
             print("Widget Fetch Error: \(error)")
-             let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: subID, error: error.localizedDescription)
+             let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: subID, error: error.localizedDescription, hidePhoneNumber: configuration.hidePhoneNumber, hideConnectionStatus: configuration.hideConnectionStatus, invertProgressBar: configuration.invertProgressBar)
             return Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(900)))
         }
     }
@@ -76,15 +76,19 @@ struct SimpleEntry: TimelineEntry {
     let vasBundles: [UsageDetail]
     let subscriberID: String?
     var error: String? = nil
+    var hidePhoneNumber: Bool = false
+    var hideConnectionStatus: Bool = false
+    var invertProgressBar: Bool = false
+    var isDeprecated: Bool = false
 }
 
-struct LegacyProvider: TimelineProvider {
+struct LegacyStaticProvider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0000000000")
+        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0000000000", isDeprecated: true)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333")
+        let entry = SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333", isDeprecated: true)
         completion(entry)
     }
 
@@ -94,7 +98,7 @@ struct LegacyProvider: TimelineProvider {
             
             // 1. Check Login
             guard let _ = NetworkManager.shared.accessToken else {
-                 let entry = SimpleEntry(date: currentDate, isLoggedIn: false, usageSummary: nil, vasBundles: [], subscriberID: nil)
+                 let entry = SimpleEntry(date: currentDate, isLoggedIn: false, usageSummary: nil, vasBundles: [], subscriberID: nil, isDeprecated: true)
                  let timeline = Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(3600)))
                  completion(timeline)
                  return
@@ -107,7 +111,7 @@ struct LegacyProvider: TimelineProvider {
             }
             
             guard let subID = subscriberID else {
-                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: nil)
+                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: nil, isDeprecated: true)
                 let timeline = Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(3600)))
                 completion(timeline)
                 return
@@ -127,7 +131,7 @@ struct LegacyProvider: TimelineProvider {
                 
                 let (usageSummary, vasBundles) = try await (summary, vas)
                 
-                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: usageSummary, vasBundles: vasBundles, subscriberID: subID)
+                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: usageSummary, vasBundles: vasBundles, subscriberID: subID, isDeprecated: true)
                 
                 let refreshDate = Calendar.current.date(byAdding: .minute, value: 30, to: currentDate)!
                 let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
@@ -135,7 +139,76 @@ struct LegacyProvider: TimelineProvider {
                 
             } catch {
                 print("Legacy Widget Fetch Error: \(error)")
-                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: subID, error: error.localizedDescription)
+                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: subID, error: error.localizedDescription, isDeprecated: true)
+                let timeline = Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(900)))
+                completion(timeline)
+            }
+        }
+    }
+}
+
+struct LegacyProvider: IntentTimelineProvider {
+    typealias Intent = LegacyConfigurationIntent
+    
+    func placeholder(in context: Context) -> SimpleEntry {
+        SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0000000000")
+    }
+
+    func getSnapshot(for configuration: LegacyConfigurationIntent, in context: Context, completion: @escaping (SimpleEntry) -> ()) {
+        let entry = SimpleEntry(date: Date(), isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: "0112223333", hidePhoneNumber: configuration.hidePhoneNumber?.boolValue ?? false, hideConnectionStatus: configuration.hideConnectionStatus?.boolValue ?? false, invertProgressBar: configuration.invertProgressBar?.boolValue ?? false)
+        completion(entry)
+    }
+
+    func getTimeline(for configuration: LegacyConfigurationIntent, in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> ()) {
+        Task {
+            let currentDate = Date()
+            
+            // 1. Check Login
+            guard let _ = NetworkManager.shared.accessToken else {
+                 let entry = SimpleEntry(date: currentDate, isLoggedIn: false, usageSummary: nil, vasBundles: [], subscriberID: nil, hidePhoneNumber: configuration.hidePhoneNumber?.boolValue ?? false, hideConnectionStatus: configuration.hideConnectionStatus?.boolValue ?? false, invertProgressBar: configuration.invertProgressBar?.boolValue ?? false)
+                 let timeline = Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(3600)))
+                 completion(timeline)
+                 return
+            }
+            
+            // 2. Determine Subscriber ID (Default to first or from configuration)
+            var subscriberID: String? = configuration.account
+            if subscriberID == nil || subscriberID?.isEmpty == true {
+                if let accounts = try? await NetworkManager.shared.fetchAccounts(), let first = accounts.first {
+                    subscriberID = first.telephoneno
+                }
+            }
+            
+            guard let subID = subscriberID else {
+                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: nil, hidePhoneNumber: configuration.hidePhoneNumber?.boolValue ?? false, hideConnectionStatus: configuration.hideConnectionStatus?.boolValue ?? false, invertProgressBar: configuration.invertProgressBar?.boolValue ?? false)
+                let timeline = Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(3600)))
+                completion(timeline)
+                return
+            }
+            
+            // 3. Fetch Data
+            do {
+                var activeServiceID = subID
+                if let serviceDetail = try? await NetworkManager.shared.fetchServiceDetails(telephoneNo: subID),
+                   let bbService = serviceDetail.listofBBService.first {
+                    activeServiceID = bbService.serviceID
+                }
+
+                let currentServiceID = activeServiceID
+                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID)
+                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID)
+                
+                let (usageSummary, vasBundles) = try await (summary, vas)
+                
+                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: usageSummary, vasBundles: vasBundles, subscriberID: subID, hidePhoneNumber: configuration.hidePhoneNumber?.boolValue ?? false, hideConnectionStatus: configuration.hideConnectionStatus?.boolValue ?? false, invertProgressBar: configuration.invertProgressBar?.boolValue ?? false)
+                
+                let refreshDate = Calendar.current.date(byAdding: .minute, value: 30, to: currentDate)!
+                let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
+                completion(timeline)
+                
+            } catch {
+                print("Legacy Widget Fetch Error: \(error)")
+                let entry = SimpleEntry(date: currentDate, isLoggedIn: true, usageSummary: nil, vasBundles: [], subscriberID: subID, error: error.localizedDescription, hidePhoneNumber: configuration.hidePhoneNumber?.boolValue ?? false, hideConnectionStatus: configuration.hideConnectionStatus?.boolValue ?? false, invertProgressBar: configuration.invertProgressBar?.boolValue ?? false)
                 let timeline = Timeline(entries: [entry], policy: .after(currentDate.addingTimeInterval(900)))
                 completion(timeline)
             }
@@ -147,17 +220,46 @@ struct SLT_Usage_Meter_WidgetEntryView : View {
     var entry: SimpleEntry
     @Environment(\.widgetFamily) var family
 
-    var body: some View {
-        VStack {
-            if !entry.isLoggedIn {
-                LoginPromptView()
-            } else if let subID = entry.subscriberID {
-                 UsageView(entry: entry, subscriberID: subID)
-                    .widgetURL(URL(string: "sltusage://account/\(subID)"))
-            } else {
-                Text("No accounts found")
+    @ViewBuilder
+    var content: some View {
+        if entry.isDeprecated {
+            VStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.yellow)
+                    .font(.title2)
+                Text("Widget Deprecated")
                     .font(.caption)
+                    .fontWeight(.bold)
+                Text("Please remove this widget and add the new 'Usage Widget' from the gallery.")
+                    .font(.system(size: 10))
+                    .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
+            }
+            .padding()
+        } else if !entry.isLoggedIn {
+            LoginPromptView()
+        } else if let subID = entry.subscriberID {
+            UsageView(entry: entry, subscriberID: subID)
+                .widgetURL(URL(string: "sltusage://account/\(subID)"))
+        } else {
+            Text("No accounts found")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+
+    var body: some View {
+        if #available(iOS 17.0, macOS 14.0, *) {
+            content
+                .containerBackground(for: .widget) {
+                    Color("WidgetBackground")
+                }
+        } else {
+            ZStack {
+                Color("WidgetBackground")
+                    .ignoresSafeArea()
+                content
+                    .padding()
             }
         }
     }
@@ -175,8 +277,6 @@ struct LoginPromptView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .widgetBackground(Color.gray.opacity(0.1))
     }
 }
 
@@ -184,23 +284,17 @@ struct UsageView: View {
     let entry: SimpleEntry
     let subscriberID: String
     
-    @AppStorage("hidePhoneNumberInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
-    private var hidePhoneNumberInWidget: Bool = false
-    
-    @AppStorage("hideConnectionStatusInWidget", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
-    private var hideConnectionStatusInWidget: Bool = false
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Header
-            if !hidePhoneNumberInWidget || (!hideConnectionStatusInWidget && entry.usageSummary != nil) {
+            if !entry.hidePhoneNumber || (!entry.hideConnectionStatus && entry.usageSummary != nil) {
                 HStack {
-                    Text(hidePhoneNumberInWidget ? "" : subscriberID)
+                    Text(entry.hidePhoneNumber ? "" : subscriberID)
                         .font(.caption)
                         .fontWeight(.bold)
                         .foregroundColor(.secondary)
                     Spacer()
-                    if !hideConnectionStatusInWidget, let summary = entry.usageSummary {
+                    if !entry.hideConnectionStatus, let summary = entry.usageSummary {
                         Text(summary.status)
                             .font(.system(size: 10, weight: .bold))
                             .padding(.horizontal, 6)
@@ -236,21 +330,21 @@ struct UsageView: View {
                     // Main Package
                     if let packageInfo = summary.myPackageInfo {
                         ForEach(packageInfo.usageDetails.prefix(2)) { usage in
-                            WidgetProgressBar(name: usage.name, used: usage.used, limit: usage.limit, unit: usage.volumeUnit, color: .blue)
+                            WidgetProgressBar(name: usage.name, used: usage.used, limit: usage.limit, unit: usage.volumeUnit, color: .blue, invertProgressBar: entry.invertProgressBar)
                         }
                     }
                     
                     // Data Packs
                     if let bonus = summary.bonusDataSummary {
-                        WidgetProgressBar(name: "Bonus Data", used: bonus.used, limit: bonus.limit, unit: bonus.volumeUnit, color: .purple)
+                        WidgetProgressBar(name: "Bonus Data", used: bonus.used, limit: bonus.limit, unit: bonus.volumeUnit, color: .purple, invertProgressBar: entry.invertProgressBar)
                     }
                     if let extra = summary.extraGbDataSummary {
-                        WidgetProgressBar(name: "Extra GB", used: extra.used, limit: extra.limit, unit: extra.volumeUnit, color: .orange)
+                        WidgetProgressBar(name: "Extra GB", used: extra.used, limit: extra.limit, unit: extra.volumeUnit, color: .orange, invertProgressBar: entry.invertProgressBar)
                      }
                     
                     // VAS Bundles
                     ForEach(entry.vasBundles.prefix(3)) { bundle in
-                        WidgetProgressBar(name: bundle.name, used: bundle.used, limit: bundle.limit, unit: bundle.volumeUnit, color: .green)
+                        WidgetProgressBar(name: bundle.name, used: bundle.used, limit: bundle.limit, unit: bundle.volumeUnit, color: .green, invertProgressBar: entry.invertProgressBar)
                     }
                     
                     if entry.vasBundles.isEmpty && summary.myPackageInfo == nil && summary.bonusDataSummary == nil && summary.extraGbDataSummary == nil {
@@ -272,8 +366,6 @@ struct UsageView: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .widgetBackground(Color.gray.opacity(0.1))
     }
 }
 
@@ -283,9 +375,7 @@ struct WidgetProgressBar: View {
     let limit: String?
     let unit: String
     let color: Color
-    
-    @AppStorage("invertProgressBar", store: UserDefaults(suiteName: "group.com.prabch.sltusage"))
-    private var invertProgressBar: Bool = false
+    let invertProgressBar: Bool
     
     var progress: Double {
         guard let limitStr = limit, let limitVal = Double(limitStr), limitVal > 0, let usedVal = Double(used) else { return 0 }
@@ -350,29 +440,42 @@ struct SLT_Usage_Meter_Widget: Widget {
             .description("Select an account to view data usage")
             .supportedFamilies([.systemSmall, .systemMedium])
         } else {
-            return StaticConfiguration(kind: kind, provider: LegacyProvider()) { entry in
+            return StaticConfiguration(kind: kind, provider: LegacyStaticProvider()) { entry in
                 SLT_Usage_Meter_WidgetEntryView(entry: entry)
             }
-            .configurationDisplayName("Usage Widget")
-            .description("Select an account to view data usage")
+            .configurationDisplayName("Usage Widget (Legacy)")
+            .description("This widget is deprecated. Please delete it and add the new one.")
             .supportedFamilies([.systemSmall, .systemMedium])
         }
     }
 }
 
+struct SLT_Usage_Meter_Widget_V2: Widget {
+    let kind: String = "SLT_Usage_Meter_Widget_V2"
+
+    var body: some WidgetConfiguration {
+        return IntentConfiguration(kind: kind, intent: LegacyConfigurationIntent.self, provider: LegacyProvider()) { entry in
+            SLT_Usage_Meter_WidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName("Usage Widget")
+        .description("Select an account to view data usage with display preferences.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
 extension View {
-    func widgetBackground(_ backgroundView: some View) -> some View {
+    func widgetBackground<T: View>(_ backgroundView: T) -> some View {
         #if os(iOS)
         if #available(iOS 17.0, *) {
             return self.containerBackground(for: .widget) { backgroundView }
         } else {
-            return self.padding().background(backgroundView)
+            return self.background(backgroundView.ignoresSafeArea())
         }
         #else
         if #available(macOS 14.0, *) {
             return self.containerBackground(for: .widget) { backgroundView }
         } else {
-            return self.padding().background(backgroundView)
+            return self.background(backgroundView.ignoresSafeArea())
         }
         #endif
     }
