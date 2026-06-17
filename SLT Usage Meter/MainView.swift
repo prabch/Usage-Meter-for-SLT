@@ -20,6 +20,7 @@ struct MainView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var rawErrorResponse: String?
+    @State private var lastUpdated: Date?
 
     var body: some View {
         Group {
@@ -85,7 +86,8 @@ struct MainView: View {
                     isLoading: isLoading,
                     errorMessage: errorMessage,
                     rawErrorResponse: rawErrorResponse,
-                    retryAction: fetchDataForSelectedAccount,
+                    lastUpdated: lastUpdated,
+                    retryAction: { fetchDataForSelectedAccount() },
                     refreshAction: refreshData
                 )
                 .tabItem {
@@ -110,7 +112,8 @@ struct MainView: View {
                 isLoading: isLoading,
                 errorMessage: errorMessage,
                 rawErrorResponse: rawErrorResponse,
-                retryAction: fetchDataForSelectedAccount,
+                lastUpdated: lastUpdated,
+                retryAction: { fetchDataForSelectedAccount() },
                 refreshAction: refreshData
             )
             .tabItem {
@@ -196,7 +199,7 @@ struct MainView: View {
         }
     }
 
-    private func fetchDataForSelectedAccount() {
+    private func fetchDataForSelectedAccount(forceRefresh: Bool = false) {
         guard let account = selectedAccount else { return }
         
         isLoading = true
@@ -208,20 +211,21 @@ struct MainView: View {
         Task {
             do {
                 // Fetch Service Details
-                if let service = try await NetworkManager.shared.fetchServiceDetails(telephoneNo: telephoneNo) {
+                if let service = try await NetworkManager.shared.fetchServiceDetails(telephoneNo: telephoneNo, forceRefresh: forceRefresh) {
                      DispatchQueue.main.async { self.serviceDetail = service }
                      
                      let subscriberIDToUse = service.listofBBService.first?.serviceID ?? telephoneNo
                      
                      // Fetch Usage and VAS concurrently
-                     async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: subscriberIDToUse)
-                     async let bundles = NetworkManager.shared.fetchVASBundles(subscriberID: subscriberIDToUse)
+                     async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: subscriberIDToUse, forceRefresh: forceRefresh)
+                     async let bundles = NetworkManager.shared.fetchVASBundles(subscriberID: subscriberIDToUse, forceRefresh: forceRefresh)
                      
                      let (usageSummary, vasBundles) = try await (summary, bundles)
                      
                      DispatchQueue.main.async {
                          self.usageSummary = usageSummary
                          self.vasBundles = vasBundles
+                         self.lastUpdated = CacheManager.shared.getTimestamp(forKey: "usageSummary_\(subscriberIDToUse)")
                          self.isLoading = false
                      }
                 } else {
@@ -254,7 +258,7 @@ struct MainView: View {
     // Async wrapper for pull-to-refresh
     private func refreshData() async {
         await withCheckedContinuation { continuation in
-            fetchDataForSelectedAccount()
+            fetchDataForSelectedAccount(forceRefresh: true)
             // Wait for loading to complete
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 continuation.resume()

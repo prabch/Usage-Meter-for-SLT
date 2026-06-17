@@ -35,6 +35,9 @@
 		339535FC2F0C4D7100DF1AC2 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F42F0C4D7100DF1AC2 /* Constants.swift */; };
 		339535FD2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
 		33CC248B2FDB4F5F001BB188 /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC248A2FDB4F5F001BB188 /* MailView.swift */; };
+		33EF3DF02FE2D0CC001CF21F /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */; };
+		33EF3DF12FE2D0CC001CF21F /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */; };
+		33EF3DF22FE2D0CC001CF21F /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */; };
 		64B1C1A1D81D27742A5D0AB1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F52F0C4D7100DF1AC2 /* Models.swift */; };
 		C8AE43B60D0180714908633C /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3368CB8D2F1CE17200F26990 /* Secrets.swift */; };
 /* End PBXBuildFile section */
@@ -107,6 +110,7 @@
 		339535F52F0C4D7100DF1AC2 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		33CC248A2FDB4F5F001BB188 /* MailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailView.swift; sourceTree = "<group>"; };
+		33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -222,6 +226,7 @@
 		339535F72F0C4D7100DF1AC2 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */,
 				33CC248A2FDB4F5F001BB188 /* MailView.swift */,
 				3368CB932F1CE1B700F26990 /* Secrets.example.swift */,
 				3368CB8D2F1CE17200F26990 /* Secrets.swift */,
@@ -374,6 +379,7 @@
 				335B8A912C312683002CC442 /* UsageView.swift in Sources */,
 				335B8A932C312683002CC442 /* AccountView.swift in Sources */,
 				335B8A742C312530002CC442 /* SLT_Usage_MeterApp.swift in Sources */,
+				33EF3DF22FE2D0CC001CF21F /* CacheManager.swift in Sources */,
 				335B8A7B2C312530002CC442 /* ContentView.swift in Sources */,
 				339535FB2F0C4D7100DF1AC2 /* Models.swift in Sources */,
 				339535FC2F0C4D7100DF1AC2 /* Constants.swift in Sources */,
@@ -389,6 +395,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				339483022FE2628000627A9A /* WidgetConfiguration.intentdefinition in Sources */,
+				33EF3DF02FE2D0CC001CF21F /* CacheManager.swift in Sources */,
 				339535F82F0C4D7100DF1AC2 /* Models.swift in Sources */,
 				339535F92F0C4D7100DF1AC2 /* Constants.swift in Sources */,
 				3368CB8F2F1CE17200F26990 /* Secrets.swift in Sources */,
@@ -405,6 +412,7 @@
 				0039D7282C57ADECC3FC50F7 /* NetworkManager.swift in Sources */,
 				C8AE43B60D0180714908633C /* Secrets.swift in Sources */,
 				30BAAA68952C74EC8BE7336C /* Constants.swift in Sources */,
+				33EF3DF12FE2D0CC001CF21F /* CacheManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -60,8 +60,8 @@ struct Provider: AppIntentTimelineProvider {
             }
 
             let currentServiceID = activeServiceID
-            async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID)
-            async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID)
+            async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID, forceRefresh: true)
+            async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID, forceRefresh: true)
             
             let (usageSummary, vasBundles) = try await (summary, vas)
             
@@ -162,8 +162,8 @@ struct LegacyStaticProvider: TimelineProvider {
                 }
 
                 let currentServiceID = activeServiceID
-                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID)
-                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID)
+                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID, forceRefresh: true)
+                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID, forceRefresh: true)
                 
                 let (usageSummary, vasBundles) = try await (summary, vas)
                 
@@ -239,8 +239,8 @@ struct LegacyProvider: IntentTimelineProvider {
                 }
 
                 let currentServiceID = activeServiceID
-                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID)
-                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID)
+                async let summary = NetworkManager.shared.fetchUsageSummary(subscriberID: currentServiceID, forceRefresh: true)
+                async let vas = NetworkManager.shared.fetchVASBundles(subscriberID: currentServiceID, forceRefresh: true)
                 
                 let (usageSummary, vasBundles) = try await (summary, vas)
                 

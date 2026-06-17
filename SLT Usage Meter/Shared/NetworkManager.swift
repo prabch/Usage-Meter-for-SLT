@@ -95,60 +95,135 @@ class NetworkManager {
         }
     }
     
-    func fetchAccounts() async throws -> [AccountInfo] {
+    func fetchAccounts(forceRefresh: Bool = false) async throws -> [AccountInfo] {
         guard let username = username else { throw URLError(.userAuthenticationRequired) }
         
-        let url = APIEndpoint.accountDetail(username: username).url
-        let finalRequest = try createRequest(url: url)
-        
-        let (data, _) = try await execute(request: finalRequest)
-        let response = try JSONDecoder().decode(AccountResponse.self, from: data)
-        let accounts = response.dataBundle ?? []
-        
-        if let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName) {
-            let phoneNumbers = accounts.map { $0.telephoneno }
-            sharedDefaults.set(phoneNumbers, forKey: AppConstants.Keys.cachedAccounts)
+        let cacheKey = "accounts_\(username)"
+        if !forceRefresh, let cached: [AccountInfo] = CacheManager.shared.load(forKey: cacheKey) {
+            return cached
         }
         
-        return accounts
-    }
-    
-    func fetchServiceDetails(telephoneNo: String) async throws -> ServiceDetailBundle? {
-        let url = URL(string: "\(AppConstants.API.baseURL)/AccountOMNI/GetServiceDetailRequest?categoryID=BB&telephoneNo=\(telephoneNo)")!
-        let request = try createRequest(url: url)
+        let url = APIEndpoint.accountDetail(username: username).url
         
-        let (data, _) = try await execute(request: request)
-        let response = try JSONDecoder().decode(ServiceDetailResponse.self, from: data)
-        return response.dataBundle
+        do {
+            let finalRequest = try createRequest(url: url)
+            let (data, _) = try await execute(request: finalRequest)
+            
+            do {
+                let response = try JSONDecoder().decode(AccountResponse.self, from: data)
+                let accounts = response.dataBundle ?? []
+                
+                CacheManager.shared.save(accounts, forKey: cacheKey)
+                
+                if let sharedDefaults = UserDefaults(suiteName: AppConstants.suiteName) {
+                    let phoneNumbers = accounts.map { $0.telephoneno }
+                    sharedDefaults.set(phoneNumbers, forKey: AppConstants.Keys.cachedAccounts)
+                }
+                
+                return accounts
+            } catch {
+                let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
+                throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+            }
+        } catch {
+            if let cached: [AccountInfo] = CacheManager.shared.load(forKey: cacheKey, ignoreExpiration: true) {
+                return cached
+            }
+            throw error
+        }
     }
     
-    func fetchUsageSummary(subscriberID: String) async throws -> UsageSummaryBundle? {
+    func fetchServiceDetails(telephoneNo: String, forceRefresh: Bool = false) async throws -> ServiceDetailBundle? {
+        let cacheKey = "serviceDetails_\(telephoneNo)"
+        
+        if !forceRefresh, let cached: ServiceDetailBundle = CacheManager.shared.load(forKey: cacheKey) {
+            return cached
+        }
+        
+        let url = URL(string: "\(AppConstants.API.baseURL)/AccountOMNI/GetServiceDetailRequest?categoryID=BB&telephoneNo=\(telephoneNo)")!
+        
+        do {
+            let request = try createRequest(url: url)
+            let (data, _) = try await execute(request: request)
+            
+            do {
+                let response = try JSONDecoder().decode(ServiceDetailResponse.self, from: data)
+                if let bundle = response.dataBundle {
+                    CacheManager.shared.save(bundle, forKey: cacheKey)
+                }
+                return response.dataBundle
+            } catch {
+                let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
+                throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+            }
+        } catch {
+            if let cached: ServiceDetailBundle = CacheManager.shared.load(forKey: cacheKey, ignoreExpiration: true) {
+                return cached
+            }
+            throw error
+        }
+    }
+    
+    func fetchUsageSummary(subscriberID: String, forceRefresh: Bool = false) async throws -> UsageSummaryBundle? {
+        let cacheKey = "usageSummary_\(subscriberID)"
+        
+        if !forceRefresh, let cached: UsageSummaryBundle = CacheManager.shared.load(forKey: cacheKey) {
+            return cached
+        }
+        
         let internationalNumber = convertToInternationalFormat(subscriberID)
         let url = APIEndpoint.usageSummary(subscriberID: internationalNumber).url
-        let request = try createRequest(url: url)
         
-        let (data, _) = try await execute(request: request)
         do {
-            let response = try JSONDecoder().decode(UsageSummaryResponse.self, from: data)
-            return response.dataBundle
+            let request = try createRequest(url: url)
+            let (data, _) = try await execute(request: request)
+            
+            do {
+                let response = try JSONDecoder().decode(UsageSummaryResponse.self, from: data)
+                if let bundle = response.dataBundle {
+                    CacheManager.shared.save(bundle, forKey: cacheKey)
+                }
+                return response.dataBundle
+            } catch {
+                let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
+                throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+            }
         } catch {
-            let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
-            throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+            if let cached: UsageSummaryBundle = CacheManager.shared.load(forKey: cacheKey, ignoreExpiration: true) {
+                return cached
+            }
+            throw error
         }
     }
     
-    func fetchVASBundles(subscriberID: String) async throws -> [UsageDetail] {
+    func fetchVASBundles(subscriberID: String, forceRefresh: Bool = false) async throws -> [UsageDetail] {
+        let cacheKey = "vasBundles_\(subscriberID)"
+        
+        if !forceRefresh, let cached: [UsageDetail] = CacheManager.shared.load(forKey: cacheKey) {
+            return cached
+        }
+        
         let internationalNumber = convertToInternationalFormat(subscriberID)
         let url = APIEndpoint.vasBundles(subscriberID: internationalNumber).url
-        let request = try createRequest(url: url)
         
-        let (data, _) = try await execute(request: request)
         do {
-            let response = try JSONDecoder().decode(UsageDataResponse.self, from: data)
-            return response.dataBundle?.usageDetails ?? []
+            let request = try createRequest(url: url)
+            let (data, _) = try await execute(request: request)
+            
+            do {
+                let response = try JSONDecoder().decode(UsageDataResponse.self, from: data)
+                let bundles = response.dataBundle?.usageDetails ?? []
+                CacheManager.shared.save(bundles, forKey: cacheKey)
+                return bundles
+            } catch {
+                let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
+                throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+            }
         } catch {
-            let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response string"
-            throw APIError.decodingFailed(message: error.localizedDescription, rawResponse: rawResponse)
+            if let cached: [UsageDetail] = CacheManager.shared.load(forKey: cacheKey, ignoreExpiration: true) {
+                return cached
+            }
+            throw error
         }
     }
     
