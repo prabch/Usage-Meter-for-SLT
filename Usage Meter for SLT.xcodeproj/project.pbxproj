@@ -96,7 +96,7 @@
 		335B8A922C312683002CC442 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		335B8AA62C3127B4002CC442 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		335B8AA82C3127B4002CC442 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		335DC32C2F01555A003FF565 /* SLT Usage Meter WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements"; sourceTree = "<group>"; };
+		335DC32C2F01555A003FF565 /* SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements"; sourceTree = "<group>"; };
 		3367074F2F01519000403CAB /* SLT Usage Meter WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "SLT Usage Meter WidgetExtension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3368CB8D2F1CE17200F26990 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		3368CB932F1CE1B700F26990 /* Secrets.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.example.swift; sourceTree = "<group>"; };
@@ -110,14 +110,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		336707612F01519200403CAB /* Exceptions for "SLT Usage Meter Widget" folder in "SLT Usage Meter WidgetExtension" target */ = {
+		336707612F01519200403CAB /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 3367074E2F01519000403CAB /* SLT Usage Meter WidgetExtension */;
 		};
-		339482FF2FE2620600627A9A /* Exceptions for "Usage Meter Intents" folder in "Usage Meter Intents" target */ = {
+		339482FF2FE2620600627A9A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -127,30 +127,8 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		336707522F01519100403CAB /* SLT Usage Meter Widget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				336707612F01519200403CAB /* Exceptions for "SLT Usage Meter Widget" folder in "SLT Usage Meter WidgetExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "SLT Usage Meter Widget";
-			sourceTree = "<group>";
-		};
-		339482F62FE2620600627A9A /* Usage Meter Intents */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				339482FF2FE2620600627A9A /* Exceptions for "Usage Meter Intents" folder in "Usage Meter Intents" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "Usage Meter Intents";
-			sourceTree = "<group>";
-		};
+		336707522F01519100403CAB /* SLT Usage Meter Widget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (336707612F01519200403CAB /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "SLT Usage Meter Widget"; sourceTree = "<group>"; };
+		339482F62FE2620600627A9A /* Usage Meter Intents */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (339482FF2FE2620600627A9A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "Usage Meter Intents"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,7 +163,7 @@
 			isa = PBXGroup;
 			children = (
 				339483012FE2628000627A9A /* WidgetConfiguration.intentdefinition */,
-				335DC32C2F01555A003FF565 /* SLT Usage Meter WidgetExtension.entitlements */,
+				335DC32C2F01555A003FF565 /* SLT Usage Meter Widget/SLT Usage Meter WidgetExtension.entitlements */,
 				335B8A722C312530002CC442 /* SLT Usage Meter */,
 				336707522F01519100403CAB /* SLT Usage Meter Widget */,
 				339482F62FE2620600627A9A /* Usage Meter Intents */,
@@ -326,7 +304,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2640;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					335B8A6F2C312530002CC442 = {
 						CreatedOnToolsVersion = 14.2;
@@ -826,6 +804,7 @@
 				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = "prabch.sltusage.Usage-Meter-Intents";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
