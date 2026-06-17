@@ -35,7 +35,7 @@
 					<key>INIntentParameterConfigurable</key>
 					<true/>
 					<key>INIntentParameterDisplayName</key>
-					<string>Account Number</string>
+					<string>Account</string>
 					<key>INIntentParameterDisplayNameID</key>
 					<string>NyMkWT</string>
 					<key>INIntentParameterDisplayPriority</key>
@@ -66,8 +66,6 @@
 					</array>
 					<key>INIntentParameterSupportsDynamicEnumeration</key>
 					<true/>
-					<key>INIntentParameterSupportsResolution</key>
-					<false/>
 					<key>INIntentParameterTag</key>
 					<integer>1</integer>
 					<key>INIntentParameterType</key>
@@ -110,8 +108,6 @@
 							<string>Primary</string>
 						</dict>
 					</array>
-					<key>INIntentParameterSupportsResolution</key>
-					<false/>
 					<key>INIntentParameterTag</key>
 					<integer>3</integer>
 					<key>INIntentParameterType</key>
@@ -154,8 +150,6 @@
 							<string>Primary</string>
 						</dict>
 					</array>
-					<key>INIntentParameterSupportsResolution</key>
-					<false/>
 					<key>INIntentParameterTag</key>
 					<integer>5</integer>
 					<key>INIntentParameterType</key>
@@ -198,8 +192,6 @@
 							<string>Primary</string>
 						</dict>
 					</array>
-					<key>INIntentParameterSupportsResolution</key>
-					<false/>
 					<key>INIntentParameterTag</key>
 					<integer>7</integer>
 					<key>INIntentParameterType</key>
