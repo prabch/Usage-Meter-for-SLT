@@ -19,6 +19,7 @@ struct AppConstants {
         static let accessToken = "accessToken"
         static let refreshToken = "refreshToken"
         static let username = "username" // This is the email
+        static let cachedAccounts = "cachedAccounts"
     }
 }
 

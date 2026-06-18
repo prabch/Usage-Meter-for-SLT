@@ -11,6 +11,16 @@ import SwiftUI
 struct SLT_Usage_MeterApp: App {
     let persistenceController = PersistenceController.shared
 
+    init() {
+        #if os(iOS)
+        if #available(iOS 15.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithDefaultBackground()
+            UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        }
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

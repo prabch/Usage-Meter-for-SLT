@@ -16,6 +16,7 @@ struct UsageView: View {
     let isLoading: Bool
     let errorMessage: String?
     let rawErrorResponse: String?
+    let lastUpdated: Date?
     let retryAction: () -> Void
     let refreshAction: () async -> Void
     
@@ -153,6 +154,14 @@ struct UsageView: View {
                                 }
                             }
                         }
+                        
+                        // Last Updated
+                        if let date = lastUpdated {
+                            Text("Last updated: \(date, formatter: absoluteDateFormatter)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.top, 10)
+                        }
                     }
                     .padding(.vertical)
                 }
@@ -165,3 +174,11 @@ struct UsageView: View {
         }
     }
 }
+
+private let absoluteDateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .short
+    formatter.doesRelativeDateFormatting = true
+    return formatter
+}()
