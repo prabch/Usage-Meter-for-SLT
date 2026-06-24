@@ -28,7 +28,7 @@ extension String {
 // MARK: - Auth Response
 struct LoginResponse: Decodable {
     let accessToken: String
-    let refreshToken: String
+    var refreshToken: String?
     let name: String?
     let userId: String?
     
@@ -52,10 +52,12 @@ struct LoginResponse: Decodable {
         }
         
         // Decode refreshToken: try camelCase first, fallback to snake_case
-        if let token = try? container.decode(String.self, forKey: .refreshToken) {
+        if let token = try? container.decodeIfPresent(String.self, forKey: .refreshToken) {
+            self.refreshToken = token
+        } else if let token = try? container.decodeIfPresent(String.self, forKey: .refreshTokenSnake) {
             self.refreshToken = token
         } else {
-            self.refreshToken = try container.decode(String.self, forKey: .refreshTokenSnake)
+            self.refreshToken = nil
         }
         
         self.name = try? container.decode(String.self, forKey: .name)

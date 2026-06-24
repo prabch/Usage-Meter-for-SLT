@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		0039D7282C57ADECC3FC50F7 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
 		30BAAA68952C74EC8BE7336C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F42F0C4D7100DF1AC2 /* Constants.swift */; };
+		33495C782FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33495C772FEBEB3A0029D23C /* MockDataSanitizer.swift */; };
+		33495C792FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33495C772FEBEB3A0029D23C /* MockDataSanitizer.swift */; };
+		33495C7A2FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33495C772FEBEB3A0029D23C /* MockDataSanitizer.swift */; };
 		335B8A742C312530002CC442 /* SLT_Usage_MeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A732C312530002CC442 /* SLT_Usage_MeterApp.swift */; };
 		335B8A762C312530002CC442 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A752C312530002CC442 /* Persistence.swift */; };
 		335B8A792C312530002CC442 /* SLT_Usage_Meter.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A772C312530002CC442 /* SLT_Usage_Meter.xcdatamodeld */; };
@@ -83,6 +86,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		33495C772FEBEB3A0029D23C /* MockDataSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataSanitizer.swift; sourceTree = "<group>"; };
 		335B8A702C312530002CC442 /* Usage Meter for SLT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Usage Meter for SLT.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		335B8A732C312530002CC442 /* SLT_Usage_MeterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SLT_Usage_MeterApp.swift; sourceTree = "<group>"; };
 		335B8A752C312530002CC442 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
@@ -227,6 +231,7 @@
 		339535F72F0C4D7100DF1AC2 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				33495C772FEBEB3A0029D23C /* MockDataSanitizer.swift */,
 				33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */,
 				33CC248A2FDB4F5F001BB188 /* MailView.swift */,
 				3368CB932F1CE1B700F26990 /* Secrets.example.swift */,
@@ -375,6 +380,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3368CB912F1CE17200F26990 /* Secrets.swift in Sources */,
+				33495C7A2FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */,
 				335B8A792C312530002CC442 /* SLT_Usage_Meter.xcdatamodeld in Sources */,
 				335B8A8C2C312683002CC442 /* MainView.swift in Sources */,
 				335B8A912C312683002CC442 /* UsageView.swift in Sources */,
@@ -396,6 +402,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33EF3DF02FE2D0CC001CF21F /* CacheManager.swift in Sources */,
+				33495C782FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */,
 				339535F82F0C4D7100DF1AC2 /* Models.swift in Sources */,
 				339535F92F0C4D7100DF1AC2 /* Constants.swift in Sources */,
 				3368CB8F2F1CE17200F26990 /* Secrets.swift in Sources */,
@@ -412,6 +419,7 @@
 				C8AE43B60D0180714908633C /* Secrets.swift in Sources */,
 				30BAAA68952C74EC8BE7336C /* Constants.swift in Sources */,
 				33EF3DF12FE2D0CC001CF21F /* CacheManager.swift in Sources */,
+				33495C792FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

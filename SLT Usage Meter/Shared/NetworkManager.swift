@@ -31,6 +31,13 @@ class NetworkManager {
         configuration.timeoutIntervalForResource = 120 // 120 seconds
         configuration.waitsForConnectivity = false
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        
+        #if DEBUG
+        if AppConstants.isScreenshotMode {
+            configuration.protocolClasses = [MockDataURLProtocol.self] + (configuration.protocolClasses ?? [])
+        }
+        #endif
+
         return URLSession(configuration: configuration)
     }()
     
@@ -85,7 +92,9 @@ class NetworkManager {
             
             // Save credentials securely in Keychain
             KeychainHelper.shared.save(loginResponse.accessToken, forKey: AppConstants.Keys.accessToken)
-            KeychainHelper.shared.save(loginResponse.refreshToken, forKey: AppConstants.Keys.refreshToken)
+            if let newRefreshToken = loginResponse.refreshToken {
+                KeychainHelper.shared.save(newRefreshToken, forKey: AppConstants.Keys.refreshToken)
+            }
             KeychainHelper.shared.save(username, forKey: AppConstants.Keys.username)
             WidgetCenter.shared.reloadAllTimelines()
             
@@ -269,11 +278,22 @@ class NetworkManager {
     }
     
     private func execute(request: URLRequest) async throws -> (Data, URLResponse) {
+        let originalAuthHeader = request.value(forHTTPHeaderField: "authorization")
         let (data, response) = try await session.data(for: request)
         
         if let httpResponse = response as? HTTPURLResponse {
             if httpResponse.statusCode == 401 || httpResponse.statusCode == 403 {
                 // Token expired. Let's try to refresh automatically!
+                
+                // First, check if another process (e.g. Widget) has already refreshed the token
+                if let currentToken = KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken),
+                   "bearer \(currentToken)" != originalAuthHeader {
+                    print("NetworkManager: Token already refreshed by another process. Retrying...")
+                    var retriedRequest = request
+                    retriedRequest.setValue("bearer \(currentToken)", forHTTPHeaderField: "authorization")
+                    return try await session.data(for: retriedRequest)
+                }
+                
                 do {
                     print("NetworkManager: Access token expired. Attempting background token refresh...")
                     let newAccessToken = try await TokenRefresher.shared.refresh(using: self)
@@ -285,8 +305,22 @@ class NetworkManager {
                     print("NetworkManager: Token refresh successful. Retrying original request...")
                     return try await session.data(for: retriedRequest)
                 } catch {
-                    print("NetworkManager: Token refresh failed with error: \(error). Logging out...")
-                    logout()
+                    // Check AGAIN if another process successfully refreshed it while we were failing
+                    if let currentToken = KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken),
+                       "bearer \(currentToken)" != originalAuthHeader {
+                        print("NetworkManager: Token refresh failed, but another process succeeded. Retrying...")
+                        var retriedRequest = request
+                        retriedRequest.setValue("bearer \(currentToken)", forHTTPHeaderField: "authorization")
+                        return try await session.data(for: retriedRequest)
+                    }
+                    
+                    print("NetworkManager: Token refresh failed with error: \(error).")
+                    
+                    // Only log out if it's a true auth rejection (400 or 401), not a network/server error
+                    if let nsError = error as NSError?, nsError.domain == "Auth", nsError.code == 400 || nsError.code == 401 {
+                        print("NetworkManager: Invalid refresh token. Logging out...")
+                        logout()
+                    }
                     throw URLError(.userAuthenticationRequired)
                 }
             }
@@ -322,7 +356,9 @@ class NetworkManager {
             
             // Save new credentials securely
             KeychainHelper.shared.save(loginResponse.accessToken, forKey: AppConstants.Keys.accessToken)
-            KeychainHelper.shared.save(loginResponse.refreshToken, forKey: AppConstants.Keys.refreshToken)
+            if let newRefreshToken = loginResponse.refreshToken {
+                KeychainHelper.shared.save(newRefreshToken, forKey: AppConstants.Keys.refreshToken)
+            }
             
             return loginResponse.accessToken
         } else {

@@ -35,6 +35,8 @@ class CacheManager {
     }
     
     func save<T: Codable>(_ data: T, forKey key: String) {
+        if AppConstants.isScreenshotMode { return }
+        
         let entry = CacheEntry(data: data, timestamp: Date())
         if let encoded = try? JSONEncoder().encode(entry) {
             defaults?.set(encoded, forKey: key)
@@ -42,6 +44,8 @@ class CacheManager {
     }
     
     func load<T: Codable>(forKey key: String, ignoreExpiration: Bool = false) -> T? {
+        if AppConstants.isScreenshotMode { return nil }
+        
         guard let data = defaults?.data(forKey: key),
               let entry = try? JSONDecoder().decode(CacheEntry<T>.self, from: data) else {
             return nil
