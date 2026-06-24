@@ -21,6 +21,25 @@ struct AppConstants {
         static let username = "username" // This is the email
         static let cachedAccounts = "cachedAccounts"
     }
+    
+    #if DEBUG
+    static var isScreenshotMode: Bool = {
+        let defaults = UserDefaults(suiteName: suiteName)
+        if ProcessInfo.processInfo.arguments.contains("-isScreenshotMode") {
+            defaults?.set(true, forKey: "ScreenshotModeActive")
+            return true
+        }
+        
+        if Bundle.main.bundlePath.hasSuffix(".app") {
+            defaults?.set(false, forKey: "ScreenshotModeActive")
+            return false
+        }
+        
+        return defaults?.bool(forKey: "ScreenshotModeActive") ?? false
+    }()
+    #else
+    static var isScreenshotMode: Bool { false }
+    #endif
 }
 
 enum APIEndpoint {

@@ -31,6 +31,13 @@ class NetworkManager {
         configuration.timeoutIntervalForResource = 120 // 120 seconds
         configuration.waitsForConnectivity = false
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        
+        #if DEBUG
+        if AppConstants.isScreenshotMode {
+            configuration.protocolClasses = [MockDataURLProtocol.self] + (configuration.protocolClasses ?? [])
+        }
+        #endif
+
         return URLSession(configuration: configuration)
     }()
     
