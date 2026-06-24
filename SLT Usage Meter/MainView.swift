@@ -19,6 +19,7 @@ struct MainView: View {
     @State private var vasBundles: [UsageDetail] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var selectedTab = 0
     @State private var rawErrorResponse: String?
     @State private var lastUpdated: Date?
 
@@ -90,7 +91,7 @@ struct MainView: View {
             
             Divider()
             
-            TabView {
+            TabView(selection: $selectedTab) {
                 UsageView(
                     usageSummary: usageSummary,
                     vasBundles: vasBundles,
@@ -102,8 +103,15 @@ struct MainView: View {
                     refreshAction: refreshData
                 )
                 .tabItem {
-                    Label("Usage", systemImage: "speedometer")
+                    Label("Summary", systemImage: "gauge.with.dots.needle.67percent")
                 }
+                .tag(0)
+
+                DailyUsageView(subscriberID: selectedAccount?.telephoneno)
+                .tabItem {
+                    Label("Usage", systemImage: "chart.bar.fill")
+                }
+                .tag(1)
 
                 AccountView(
                     serviceDetail: serviceDetail,
@@ -112,11 +120,12 @@ struct MainView: View {
                 .tabItem {
                     Label("Account", systemImage: "person.crop.circle")
                 }
+                .tag(2)
             }
         }
         #else
         // iOS TabView with Toolbar
-        TabView {
+        TabView(selection: $selectedTab) {
             UsageView(
                 usageSummary: usageSummary,
                 vasBundles: vasBundles,
@@ -128,8 +137,15 @@ struct MainView: View {
                 refreshAction: refreshData
             )
             .tabItem {
-                Label("Usage", systemImage: "speedometer")
+                Label("Summary", systemImage: "gauge.with.dots.needle.67percent")
             }
+            .tag(0)
+
+            DailyUsageView(subscriberID: selectedAccount?.telephoneno)
+            .tabItem {
+                Label("Usage", systemImage: "chart.bar.fill")
+            }
+            .tag(1)
 
             AccountView(
                 serviceDetail: serviceDetail,
@@ -138,6 +154,7 @@ struct MainView: View {
             .tabItem {
                 Label("Account", systemImage: "person.crop.circle")
             }
+            .tag(2)
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
