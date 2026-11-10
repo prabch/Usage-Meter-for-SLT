@@ -235,8 +235,13 @@ class NetworkManager {
             throw error
         }
     }
-    
-    func fetchCurrentDailyUsage(subscriberID: String, billDate: String = "01") async throws -> DailyUsageDataBundle? {
+    func fetchCurrentDailyUsage(subscriberID: String, billDate: String = "01", forceRefresh: Bool = false) async throws -> DailyUsageDataBundle? {
+        let cacheKey = "currentDailyUsage_\(subscriberID)_\(billDate)"
+        
+        if !forceRefresh, let cached: DailyUsageDataBundle = DiskCacheManager.shared.load(forKey: cacheKey, isCurrentMonth: true) {
+            return cached
+        }
+        
         let internationalNumber = convertToInternationalFormat(subscriberID)
         let url = APIEndpoint.currentDailyUsage(subscriberID: internationalNumber, billDate: billDate).url
         let request = try createRequest(url: url)
@@ -245,8 +250,17 @@ class NetworkManager {
         let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
         return response.dataBundle
     }
+        if let bundle = response.dataBundle {
+            DiskCacheManager.shared.save(bundle, forKey: cacheKey)
+        }
     
-    func fetchPreviousDailyUsage(subscriberID: String, billDate: String = "01", monthIndex: Int) async throws -> DailyUsageDataBundle? {
+    func fetchPreviousDailyUsage(subscriberID: String, billDate: String = "01", monthIndex: Int, forceRefresh: Bool = false) async throws -> DailyUsageDataBundle? {
+        let cacheKey = "previousDailyUsage_\(subscriberID)_\(billDate)_\(monthIndex)"
+        
+        if !forceRefresh, let cached: DailyUsageDataBundle = DiskCacheManager.shared.load(forKey: cacheKey, isCurrentMonth: false) {
+            return cached
+        }
+        
         let internationalNumber = convertToInternationalFormat(subscriberID)
         let url = APIEndpoint.previousDailyUsage(subscriberID: internationalNumber, billDate: billDate, monthIndex: monthIndex).url
         let request = try createRequest(url: url)
@@ -255,8 +269,17 @@ class NetworkManager {
         let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
         return response.dataBundle
     }
+        if let bundle = response.dataBundle {
+            DiskCacheManager.shared.save(bundle, forKey: cacheKey)
+        }
     
-    func fetchProtocolReport(subscriberID: String, date: String) async throws -> ProtocolReportBundle? {
+    func fetchProtocolReport(subscriberID: String, date: String, forceRefresh: Bool = false) async throws -> ProtocolReportBundle? {
+        let cacheKey = "protocolReport_\(subscriberID)_\(date)"
+        
+        if !forceRefresh, let cached: ProtocolReportBundle = DiskCacheManager.shared.load(forKey: cacheKey, isCurrentMonth: false) {
+            return cached
+        }
+        
         let internationalNumber = convertToInternationalFormat(subscriberID)
         let url = APIEndpoint.protocolReport(subscriberID: internationalNumber, date: date).url
         let request = try createRequest(url: url)
@@ -265,9 +288,11 @@ class NetworkManager {
         let response = try JSONDecoder().decode(ProtocolReportResponse.self, from: data)
         return response.dataBundle
     }
+        if let bundle = response.dataBundle {
+            DiskCacheManager.shared.save(bundle, forKey: cacheKey)
+        }
     
     // MARK: - Private Helpers
-    
     // Helper function to convert phone number to international format
     private func convertToInternationalFormat(_ phoneNumber: String) -> String {
         let cleaned = phoneNumber.replacingOccurrences(of: " ", with: "")
