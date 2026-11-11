@@ -322,3 +322,19 @@ struct ProtocolReportEntry: Codable, Identifiable {
         case usage
     }
 }
+
+// MARK: - Subscriber Profile
+struct ProfileResponse: Codable {
+    let isSuccess: Bool
+    let dataBundle: ProfileBundle?
+}
+
+/// Only the fields the app needs; everything is optional so unexpected API changes never break decoding.
+struct ProfileBundle: Codable {
+    let subscriberid: String?
+    let priviledges: ProfilePrivileges?   // sic: spelled this way by the API
+}
+
+struct ProfilePrivileges: Codable {
+    let protocol_report: Bool?
+}

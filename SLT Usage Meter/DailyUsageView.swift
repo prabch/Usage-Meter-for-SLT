@@ -65,6 +65,12 @@ struct DailyUsageView: View {
     @State private var fetchGeneration = 0
     @State private var oldestEmptyIndex: Int?
     @State private var visibleUpToMonthIndex: Int = 2
+    /// nil = unknown (not checked yet / profile unreachable). Only `false` disables detailed reports.
+    @State private var reportAccessByAccount: [String: Bool] = [:]
+    
+    private var protocolReportEnabled: Bool? {
+        subscriberID.flatMap { reportAccessByAccount[$0] }
+    }
     
     private let monthsPerPage = 3
     
@@ -140,7 +146,8 @@ struct DailyUsageView: View {
                                 peakDay: peakDay,
                                 dayCount: sortedDays.count,
                                 unit: volumeUnit,
-                                monthTitle: selectedMonthTitle
+                                monthTitle: selectedMonthTitle,
+                                detailedReportsEnabled: protocolReportEnabled
                             )
                             
                             dailyBreakdownSection
@@ -164,7 +171,7 @@ struct DailyUsageView: View {
                 .background(DailyUsagePlatform.groupedBackground)
                 .toolbar {
                     ToolbarItem(placement: .automatic) {
-                        Button(action: fetchDailyUsage) {
+                        Button(action: { fetchDailyUsage(force: true) }) {
                             Label("Refresh", systemImage: "arrow.clockwise")
                         }
                         .disabled(isLoading)
@@ -174,11 +181,13 @@ struct DailyUsageView: View {
             }
         }
         .onAppear {
+            loadReportAccess()
             if dailyUsage == nil && !isLoading {
                 fetchDailyUsage()
             }
         }
         .onChange(of: subscriberID) { _ in
+            loadReportAccess()
             resetAndFetch()
         }
     }
@@ -193,7 +202,7 @@ struct DailyUsageView: View {
             
             VStack(spacing: 0) {
                 ForEach(Array(sortedDays.enumerated()), id: \.element.id) { index, day in
-                    DailyUsageRow(day: day, subscriberID: subscriberID ?? "")
+                    DailyUsageRow(day: day, subscriberID: subscriberID ?? "", detailedReportsEnabled: protocolReportEnabled != false)
                     
                     if index < sortedDays.count - 1 {
                         Divider()
@@ -218,7 +227,7 @@ struct DailyUsageView: View {
                 .padding(.horizontal)
             
             ForEach(sortedDays) { day in
-                DailyUsageRow(day: day, subscriberID: subscriberID ?? "")
+                DailyUsageRow(day: day, subscriberID: subscriberID ?? "", detailedReportsEnabled: protocolReportEnabled != false)
             }
         }
         #endif
@@ -393,7 +402,24 @@ struct DailyUsageView: View {
     
     // MARK: - Fetching
     
-    private func fetchDailyUsage() {
+    /// Reads the stored privilege instantly, then lets the network layer re-check the profile
+    /// only if it is missing or stale (7 days). Runs on first appear and when the account changes.
+    private func loadReportAccess() {
+        guard let subscriberID else { return }
+        // Results are keyed by account so a slow response for a previously selected account
+        // can never overwrite the state of the account currently on screen.
+        if let stored = NetworkManager.shared.storedProtocolReportAccess(subscriberID: subscriberID) {
+            reportAccessByAccount[subscriberID] = stored
+        }
+        Task {
+            let enabled = await NetworkManager.shared.fetchProtocolReportAccess(subscriberID: subscriberID)
+            await MainActor.run {
+                if let enabled { self.reportAccessByAccount[subscriberID] = enabled }
+            }
+        }
+    }
+    
+    private func fetchDailyUsage(force: Bool = false) {
         guard let subscriberID else { return }
         
         fetchGeneration += 1
@@ -407,11 +433,12 @@ struct DailyUsageView: View {
             do {
                 let bundle: DailyUsageDataBundle?
                 if monthIndex == 0 {
-                    bundle = try await NetworkManager.shared.fetchCurrentDailyUsage(subscriberID: subscriberID)
+                    bundle = try await NetworkManager.shared.fetchCurrentDailyUsage(subscriberID: subscriberID, forceRefresh: force)
                 } else {
                     bundle = try await NetworkManager.shared.fetchPreviousDailyUsage(
                         subscriberID: subscriberID,
-                        monthIndex: monthIndex
+                        monthIndex: monthIndex,
+                        forceRefresh: force
                     )
                 }
                 
@@ -446,7 +473,7 @@ struct DailyUsageView: View {
     
     private func refreshDailyUsage() async {
         await withCheckedContinuation { continuation in
-            fetchDailyUsage()
+            fetchDailyUsage(force: true)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 continuation.resume()
             }
@@ -653,6 +680,24 @@ struct DailyUsageOverviewCard: View {
     let dayCount: Int
     let unit: String
     var monthTitle: String = "Current"
+    var detailedReportsEnabled: Bool?
+    
+    @ViewBuilder
+    private var reportsBadge: some View {
+        if let enabled = detailedReportsEnabled {
+            #if os(macOS)
+            let tint: Color = enabled ? .green : .secondary
+            #else
+            let tint: Color = .white
+            #endif
+            HStack(spacing: 4) {
+                Image(systemName: enabled ? "checkmark.circle.fill" : "xmark.circle")
+                Text(enabled ? "Detailed reports on" : "Detailed reports off")
+            }
+            .font(.caption2)
+            .foregroundColor(tint.opacity(enabled ? 1 : 0.8))
+        }
+    }
     
     var body: some View {
         #if os(macOS)
@@ -664,19 +709,16 @@ struct DailyUsageOverviewCard: View {
     
     private var macOverviewCard: some View {
         VStack(spacing: 0) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(monthTitle)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    Text(String(format: "%.1f %@", totalUsage, unit))
-                        .font(.system(size: 28, weight: .semibold))
-                }
-                Spacer()
-                Image(systemName: "chart.bar.fill")
-                    .font(.title2)
-                    .foregroundColor(.accentColor)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(monthTitle)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Text(String(format: "%.1f %@", totalUsage, unit))
+                    .font(.system(size: 28, weight: .semibold))
+                reportsBadge
+                    .padding(.top, 2)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
             
             Divider()
@@ -704,21 +746,18 @@ struct DailyUsageOverviewCard: View {
     
     private var iosOverviewCard: some View {
         VStack(spacing: 16) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(monthTitle)
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.8))
-                    Text(String(format: "%.1f %@", totalUsage, unit))
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                }
-                Spacer()
-                Image(systemName: "chart.bar.fill")
+            VStack(alignment: .leading, spacing: 4) {
+                Text(monthTitle)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+                Text(String(format: "%.1f %@", totalUsage, unit))
                     .font(.title2)
+                    .fontWeight(.bold)
                     .foregroundColor(.white)
+                reportsBadge
+                    .padding(.top, 2)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             Divider()
                 .background(Color.white.opacity(0.3))
@@ -779,6 +818,7 @@ struct StatItem: View {
 struct DailyUsageRow: View {
     let day: DailyUsageEntry
     let subscriberID: String
+    var detailedReportsEnabled: Bool = true
     
     @State private var isExpanded = false
     @State private var protocolReport: ProtocolReportBundle?
@@ -796,7 +836,36 @@ struct DailyUsageRow: View {
     }
     
     private var canExpand: Bool {
-        (Double(day.daily_total_usage) ?? 0) > 0
+        guard (Double(day.daily_total_usage) ?? 0) > 0 else { return false }
+        // With detailed reports off the card still expands to the summarized per-offer breakdown.
+        return detailedReportsEnabled || !day.usageItems.isEmpty
+    }
+    
+    /// Volume that the percentages of the selected tab are relative to.
+    /// Total percentages are relative to the day's total, but Download and Upload percentages are each
+    /// relative to their own direction total (which the API doesn't give), so those are recovered from
+    /// the data: total_i = D * down_i% + U * up_i%, with D + U = day total.
+    private var activeTotal: Double? {
+        guard let dayTotal = Double(day.daily_total_usage) else { return nil }
+        if selectedBreakdown == 0 { return dayTotal }
+        guard let upload = estimatedUploadVolume(dayTotal: dayTotal) else { return nil }
+        return selectedBreakdown == 2 ? upload : dayTotal - upload
+    }
+    
+    private func estimatedUploadVolume(dayTotal: Double) -> Double? {
+        guard dayTotal > 0, let report = protocolReport else { return nil }
+        let down = Dictionary(report.download.map { ($0.name, $0.presentage / 100) }, uniquingKeysWith: { a, _ in a })
+        let up = Dictionary(report.upload.map { ($0.name, $0.presentage / 100) }, uniquingKeysWith: { a, _ in a })
+        var num = 0.0, den = 0.0
+        for entry in report.total where entry.name != "Others" {
+            guard let d = down[entry.name], let u = up[entry.name] else { continue }
+            let amount = dayTotal * entry.presentage / 100
+            num += (amount - dayTotal * d) * (u - d)
+            den += (u - d) * (u - d)
+        }
+        // Require non-trivial contrast between download and upload shares so rounding noise isn't amplified.
+        guard den >= 1e-4 else { return nil }
+        return min(max(num / den, 0), dayTotal) // least-squares estimate of the upload volume
     }
     
     private var activeEntries: [ProtocolReportEntry] {
@@ -825,13 +894,17 @@ struct DailyUsageRow: View {
             Text("\(day.daily_total_usage) \(day.volumeunit)")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            #if os(iOS)
-            if canExpand {
-                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            #endif
+        }
+    }
+    
+    /// Subtle indicator that the card has more data; the whole card is the tap target.
+    @ViewBuilder
+    private var expandChevron: some View {
+        if canExpand {
+            Image(systemName: "chevron.down")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.secondary.opacity(0.7))
+                .rotationEffect(.degrees(isExpanded ? 180 : 0))
         }
     }
     
@@ -866,6 +939,8 @@ struct DailyUsageRow: View {
                         Text("\(day.daily_total_usage) \(day.volumeunit)")
                             .font(.system(size: 12, weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
+                        
+                        expandChevron
                     }
                     
                     usageBar
@@ -912,12 +987,17 @@ struct DailyUsageRow: View {
     private var iosRow: some View {
         VStack(alignment: .leading, spacing: 8) {
             Button(action: toggleExpanded) {
-                dayHeader
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        dayHeader
+                        expandChevron
+                    }
+                    usageBar
+                }
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .disabled(!canExpand)
-            
-            usageBar
             
             if isExpanded {
                 protocolDetailsSection
@@ -931,6 +1011,40 @@ struct DailyUsageRow: View {
     
     @ViewBuilder
     private var protocolDetailsSection: some View {
+        if detailedReportsEnabled {
+            protocolReportContent
+        } else {
+            summarySection
+        }
+    }
+    
+    /// Summarized breakdown from the daily usage response, used when protocol reports are unavailable.
+    private var summarySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            #if os(iOS)
+            Divider()
+            #endif
+            ForEach(day.usageItems.sorted { $0.sorter < $1.sorter }) { item in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(item.offer_name.replacingOccurrences(of: "_", with: " "))
+                            .font(.caption)
+                        Spacer()
+                        Text("\(item.volume) \(day.volumeunit)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    CapsuleProgressBar(percentage: item.percentage, height: 4, colors: [.blue.opacity(0.8), .cyan.opacity(0.7)])
+                }
+            }
+        }
+        #if os(iOS)
+        .padding(.top, 4)
+        #endif
+    }
+    
+    @ViewBuilder
+    private var protocolReportContent: some View {
         VStack(alignment: .leading, spacing: 10) {
             #if os(iOS)
             Divider()
@@ -963,7 +1077,7 @@ struct DailyUsageRow: View {
                     #if os(macOS)
                     VStack(spacing: 0) {
                         ForEach(Array(activeEntries.enumerated()), id: \.element.id) { index, entry in
-                            ProtocolReportRow(entry: entry)
+                            ProtocolReportRow(entry: entry, dayTotal: activeTotal, unit: day.volumeunit)
                                 .padding(.vertical, 6)
                             
                             if index < activeEntries.count - 1 {
@@ -983,7 +1097,7 @@ struct DailyUsageRow: View {
                     )
                     #else
                     ForEach(activeEntries) { entry in
-                        ProtocolReportRow(entry: entry)
+                        ProtocolReportRow(entry: entry, dayTotal: activeTotal, unit: day.volumeunit)
                     }
                     #endif
                 }
@@ -999,7 +1113,7 @@ struct DailyUsageRow: View {
         withAnimation(.easeInOut(duration: 0.2)) {
             isExpanded.toggle()
         }
-        if isExpanded {
+        if isExpanded && detailedReportsEnabled {
             loadProtocolReportIfNeeded()
         }
     }
@@ -1037,6 +1151,18 @@ struct DailyUsageRow: View {
 
 struct ProtocolReportRow: View {
     let entry: ProtocolReportEntry
+    var dayTotal: Double? = nil
+    var unit: String = "GB"
+    
+    /// Amount as reported by the API when present, otherwise derived from the share of the day's total.
+    private var amountText: String? {
+        if let usage = entry.usage?.trimmingCharacters(in: .whitespaces), !usage.isEmpty {
+            if Double(usage) != nil { return "\(usage) \(unit)" }
+            return usage
+        }
+        guard let total = dayTotal else { return nil }
+        return String(format: "%.2f %@", total * entry.presentage / 100, unit)
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -1045,9 +1171,15 @@ struct ProtocolReportRow: View {
                     .font(.caption)
                     .lineLimit(1)
                 Spacer()
+                if let amountText {
+                    Text(amountText)
+                        .font(.caption)
+                        .foregroundColor(.primary)
+                }
                 Text(String(format: "%.1f%%", entry.presentage))
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .frame(minWidth: 44, alignment: .trailing)
             }
             
             CapsuleProgressBar(

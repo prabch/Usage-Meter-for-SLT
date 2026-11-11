@@ -50,7 +50,7 @@ class DiskCacheManager {
         }
     }
     
-    func load<T: Codable>(forKey key: String, ignoreExpiration: Bool = false, isCurrentMonth: Bool = false) -> T? {
+    func load<T: Codable>(forKey key: String, ignoreExpiration: Bool = false, isCurrentMonth: Bool = false, maxAge: TimeInterval? = nil) -> T? {
         guard let fileURL = fileURL(forKey: key),
               FileManager.default.fileExists(atPath: fileURL.path) else {
             return nil
@@ -67,11 +67,21 @@ class DiskCacheManager {
                 }
             }
             
+            if !ignoreExpiration, let maxAge, Date().timeIntervalSince(wrapper.timestamp) > maxAge {
+                return nil
+            }
+            
             return wrapper.data
         } catch {
             print("Failed to load from DiskCacheManager: \(error)")
             return nil
         }
+    }
+    
+    /// Deletes every cached payload on disk.
+    func clearAll() {
+        guard let url = sharedCacheDirectory else { return }
+        try? FileManager.default.removeItem(at: url)
     }
     
     private struct Wrapper<T: Codable>: Codable {
