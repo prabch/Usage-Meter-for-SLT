@@ -65,6 +65,7 @@ struct DailyUsageView: View {
     @State private var fetchGeneration = 0
     @State private var oldestEmptyIndex: Int?
     @State private var visibleUpToMonthIndex: Int = 2
+    @State private var loadedSubscriberID: String?
     /// nil = unknown (not checked yet / profile unreachable). Only `false` disables detailed reports.
     @State private var reportAccessByAccount: [String: Bool] = [:]
     
@@ -171,7 +172,9 @@ struct DailyUsageView: View {
                 .background(DailyUsagePlatform.groupedBackground)
                 .toolbar {
                     ToolbarItem(placement: .automatic) {
-                        Button(action: { fetchDailyUsage(force: true) }) {
+                        Button(action: {
+                            if let subscriberID { fetchDailyUsage(subscriberID: subscriberID, force: true) }
+                        }) {
                             Label("Refresh", systemImage: "arrow.clockwise")
                         }
                         .disabled(isLoading)
@@ -181,14 +184,17 @@ struct DailyUsageView: View {
             }
         }
         .onAppear {
-            loadReportAccess()
-            if dailyUsage == nil && !isLoading {
-                fetchDailyUsage()
+            loadReportAccess(for: subscriberID)
+            if loadedSubscriberID != subscriberID {
+                resetAndFetch(for: subscriberID)
+            } else if let subscriberID, dailyUsage == nil && !isLoading {
+                fetchDailyUsage(subscriberID: subscriberID)
             }
         }
-        .onChange(of: subscriberID) { _ in
-            loadReportAccess()
-            resetAndFetch()
+        .onChange(of: subscriberID) { newID in
+            // Use `newID` directly because the `.onChange` closure can capture the previous struct's `subscriberID`.
+            loadReportAccess(for: newID)
+            resetAndFetch(for: newID)
         }
     }
     
@@ -203,6 +209,7 @@ struct DailyUsageView: View {
             VStack(spacing: 0) {
                 ForEach(Array(sortedDays.enumerated()), id: \.element.id) { index, day in
                     DailyUsageRow(day: day, subscriberID: subscriberID ?? "", detailedReportsEnabled: protocolReportEnabled != false)
+                        .id("\(subscriberID ?? "")-\(day.id)")
                     
                     if index < sortedDays.count - 1 {
                         Divider()
@@ -228,6 +235,7 @@ struct DailyUsageView: View {
             
             ForEach(sortedDays) { day in
                 DailyUsageRow(day: day, subscriberID: subscriberID ?? "", detailedReportsEnabled: protocolReportEnabled != false)
+                    .id("\(subscriberID ?? "")-\(day.id)")
             }
         }
         #endif
@@ -243,7 +251,7 @@ struct DailyUsageView: View {
                 .foregroundColor(.secondary)
             Spacer()
             Button("Retry") {
-                fetchDailyUsage()
+                if let subscriberID { fetchDailyUsage(subscriberID: subscriberID) }
             }
             #if os(macOS)
             .buttonStyle(.bordered)
@@ -358,17 +366,23 @@ struct DailyUsageView: View {
         guard index >= 0, index != selectedMonthIndex else { return }
         selectedMonthIndex = index
         errorMessage = nil
-        fetchDailyUsage()
+        if let subscriberID { fetchDailyUsage(subscriberID: subscriberID) }
     }
     
-    private func resetAndFetch() {
+    private func resetAndFetch(for targetSubscriberID: String?) {
+        loadedSubscriberID = targetSubscriberID
         selectedMonthIndex = 0
         visibleUpToMonthIndex = 2
         dailyUsage = nil
         monthLabels = [:]
         oldestEmptyIndex = nil
         errorMessage = nil
-        fetchDailyUsage()
+        if let targetSubscriberID {
+            fetchDailyUsage(subscriberID: targetSubscriberID)
+        } else {
+            fetchGeneration += 1
+            isLoading = false
+        }
     }
     
     private func formatMonthLabel(_ raw: String) -> String {
@@ -404,24 +418,23 @@ struct DailyUsageView: View {
     
     /// Reads the stored privilege instantly, then lets the network layer re-check the profile
     /// only if it is missing or stale (7 days). Runs on first appear and when the account changes.
-    private func loadReportAccess() {
-        guard let subscriberID else { return }
+    private func loadReportAccess(for targetSubscriberID: String?) {
+        guard let targetSubscriberID else { return }
         // Results are keyed by account so a slow response for a previously selected account
         // can never overwrite the state of the account currently on screen.
-        if let stored = NetworkManager.shared.storedProtocolReportAccess(subscriberID: subscriberID) {
-            reportAccessByAccount[subscriberID] = stored
+        if let stored = NetworkManager.shared.storedProtocolReportAccess(subscriberID: targetSubscriberID) {
+            reportAccessByAccount[targetSubscriberID] = stored
         }
         Task {
-            let enabled = await NetworkManager.shared.fetchProtocolReportAccess(subscriberID: subscriberID)
+            let enabled = await NetworkManager.shared.fetchProtocolReportAccess(subscriberID: targetSubscriberID)
             await MainActor.run {
-                if let enabled { self.reportAccessByAccount[subscriberID] = enabled }
+                if let enabled { self.reportAccessByAccount[targetSubscriberID] = enabled }
             }
         }
     }
     
-    private func fetchDailyUsage(force: Bool = false) {
-        guard let subscriberID else { return }
-        
+    private func fetchDailyUsage(subscriberID targetID: String, force: Bool = false) {
+        loadedSubscriberID = targetID
         fetchGeneration += 1
         let generation = fetchGeneration
         let monthIndex = selectedMonthIndex
@@ -433,10 +446,10 @@ struct DailyUsageView: View {
             do {
                 let bundle: DailyUsageDataBundle?
                 if monthIndex == 0 {
-                    bundle = try await NetworkManager.shared.fetchCurrentDailyUsage(subscriberID: subscriberID, forceRefresh: force)
+                    bundle = try await NetworkManager.shared.fetchCurrentDailyUsage(subscriberID: targetID, forceRefresh: force)
                 } else {
                     bundle = try await NetworkManager.shared.fetchPreviousDailyUsage(
-                        subscriberID: subscriberID,
+                        subscriberID: targetID,
                         monthIndex: monthIndex,
                         forceRefresh: force
                     )
@@ -473,7 +486,7 @@ struct DailyUsageView: View {
     
     private func refreshDailyUsage() async {
         await withCheckedContinuation { continuation in
-            fetchDailyUsage(force: true)
+            if let subscriberID { fetchDailyUsage(subscriberID: subscriberID, force: true) }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 continuation.resume()
             }
