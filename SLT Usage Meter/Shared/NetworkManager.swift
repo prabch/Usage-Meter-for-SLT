@@ -241,6 +241,7 @@ class NetworkManager {
             throw error
         }
     }
+    
     func fetchCurrentDailyUsage(subscriberID: String, billDate: String = "01", forceRefresh: Bool = false) async throws -> DailyUsageDataBundle? {
         let cacheKey = "currentDailyUsage_\(subscriberID)_\(billDate)"
         
@@ -254,11 +255,11 @@ class NetworkManager {
         
         let (data, _) = try await execute(request: request)
         let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
-        return response.dataBundle
-    }
         if let bundle = response.dataBundle {
             DiskCacheManager.shared.save(bundle, forKey: cacheKey)
         }
+        return response.dataBundle
+    }
     
     func fetchPreviousDailyUsage(subscriberID: String, billDate: String = "01", monthIndex: Int, forceRefresh: Bool = false) async throws -> DailyUsageDataBundle? {
         let cacheKey = "previousDailyUsage_\(subscriberID)_\(billDate)_\(monthIndex)"
@@ -273,11 +274,11 @@ class NetworkManager {
         
         let (data, _) = try await execute(request: request)
         let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
-        return response.dataBundle
-    }
         if let bundle = response.dataBundle {
             DiskCacheManager.shared.save(bundle, forKey: cacheKey)
         }
+        return response.dataBundle
+    }
     
     func fetchProtocolReport(subscriberID: String, date: String, forceRefresh: Bool = false) async throws -> ProtocolReportBundle? {
         let cacheKey = "protocolReport_\(subscriberID)_\(date)"
@@ -292,11 +293,11 @@ class NetworkManager {
         
         let (data, _) = try await execute(request: request)
         let response = try JSONDecoder().decode(ProtocolReportResponse.self, from: data)
-        return response.dataBundle
-    }
         if let bundle = response.dataBundle {
             DiskCacheManager.shared.save(bundle, forKey: cacheKey)
         }
+        return response.dataBundle
+    }
     
     // MARK: - Private Helpers
     // Helper function to convert phone number to international format
