@@ -68,6 +68,8 @@ struct AccountView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
+                ClearCacheButton()
+                
                 Button(action: {
                     showingLogoutConfirmation = true
                 }) {
@@ -270,3 +272,42 @@ private struct DebugTokenExpiryButton: View {
     }
 }
 #endif
+
+
+/// Clears cached usage, daily usage and protocol report data. Account sign-in is not affected.
+struct ClearCacheButton: View {
+    @State private var cleared = false
+    @State private var showingConfirmation = false
+    
+    var body: some View {
+        Button(action: {
+            showingConfirmation = true
+        }) {
+            HStack {
+                Image(systemName: cleared ? "checkmark.circle" : "trash")
+                Text(cleared ? "Cache cleared" : "Clear Cache")
+            }
+            .foregroundColor(.accentColor)
+            #if os(macOS)
+            .frame(maxWidth: 300)
+            #else
+            .frame(maxWidth: .infinity)
+            #endif
+            .padding()
+            .background(Color.accentColor.opacity(0.12))
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal)
+        .confirmationDialog("Are you sure you want to clear the cache?", isPresented: $showingConfirmation, titleVisibility: .visible) {
+            Button("Clear Cache", role: .destructive) {
+                NetworkManager.shared.clearAllCaches()
+                cleared = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { cleared = false }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Stored usage data and reports will be removed from this device. Your login session won't be affected.")
+        }
+    }
+}

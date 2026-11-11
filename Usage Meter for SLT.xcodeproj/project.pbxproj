@@ -21,6 +21,7 @@
 		335B8A8A2C312677002CC442 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A892C312677002CC442 /* LoginView.swift */; };
 		335B8A8C2C312683002CC442 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A8B2C312683002CC442 /* MainView.swift */; };
 		335B8A912C312683002CC442 /* UsageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A902C312683002CC442 /* UsageView.swift */; };
+		335B8A942C312684002CC442 /* DailyUsageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A952C312684002CC442 /* DailyUsageView.swift */; };
 		335B8A932C312683002CC442 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335B8A922C312683002CC442 /* AccountView.swift */; };
 		336707502F01519100403CAB /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335B8AA62C3127B4002CC442 /* WidgetKit.framework */; };
 		336707512F01519100403CAB /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 335B8AA82C3127B4002CC442 /* SwiftUI.framework */; };
@@ -37,8 +38,11 @@
 		339535FD2F0C4D7100DF1AC2 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */; };
 		33CC248B2FDB4F5F001BB188 /* MailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC248A2FDB4F5F001BB188 /* MailView.swift */; };
 		33EF3DF02FE2D0CC001CF21F /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */; };
+		33EF4DF02FE2D0CC001CF21F /* DiskCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF4DEF2FE2D0CC001CF21F /* DiskCacheManager.swift */; };
 		33EF3DF12FE2D0CC001CF21F /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */; };
+		33EF4DF12FE2D0CC001CF21F /* DiskCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF4DEF2FE2D0CC001CF21F /* DiskCacheManager.swift */; };
 		33EF3DF22FE2D0CC001CF21F /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */; };
+		33EF4DF22FE2D0CC001CF21F /* DiskCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EF4DEF2FE2D0CC001CF21F /* DiskCacheManager.swift */; };
 		64B1C1A1D81D27742A5D0AB1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339535F52F0C4D7100DF1AC2 /* Models.swift */; };
 		C8AE43B60D0180714908633C /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3368CB8D2F1CE17200F26990 /* Secrets.swift */; };
 /* End PBXBuildFile section */
@@ -98,6 +102,7 @@
 		335B8A892C312677002CC442 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		335B8A8B2C312683002CC442 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		335B8A902C312683002CC442 /* UsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageView.swift; sourceTree = "<group>"; };
+		335B8A952C312684002CC442 /* DailyUsageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyUsageView.swift; sourceTree = "<group>"; };
 		335B8A922C312683002CC442 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		335B8AA62C3127B4002CC442 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		335B8AA82C3127B4002CC442 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -111,6 +116,7 @@
 		339535F62F0C4D7100DF1AC2 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		33CC248A2FDB4F5F001BB188 /* MailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MailView.swift; sourceTree = "<group>"; };
 		33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
+		33EF4DEF2FE2D0CC001CF21F /* DiskCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskCacheManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -200,6 +206,7 @@
 				335B8A892C312677002CC442 /* LoginView.swift */,
 				335B8A8B2C312683002CC442 /* MainView.swift */,
 				335B8A902C312683002CC442 /* UsageView.swift */,
+				335B8A952C312684002CC442 /* DailyUsageView.swift */,
 				335B8A922C312683002CC442 /* AccountView.swift */,
 				335B8A7C2C312531002CC442 /* Assets.xcassets */,
 				335B8A7E2C312531002CC442 /* SLT_Usage_Meter.entitlements */,
@@ -233,6 +240,7 @@
 			children = (
 				33495C772FEBEB3A0029D23C /* MockDataSanitizer.swift */,
 				33EF3DEF2FE2D0CC001CF21F /* CacheManager.swift */,
+				33EF4DEF2FE2D0CC001CF21F /* DiskCacheManager.swift */,
 				33CC248A2FDB4F5F001BB188 /* MailView.swift */,
 				3368CB932F1CE1B700F26990 /* Secrets.example.swift */,
 				3368CB8D2F1CE17200F26990 /* Secrets.swift */,
@@ -384,9 +392,11 @@
 				335B8A792C312530002CC442 /* SLT_Usage_Meter.xcdatamodeld in Sources */,
 				335B8A8C2C312683002CC442 /* MainView.swift in Sources */,
 				335B8A912C312683002CC442 /* UsageView.swift in Sources */,
+				335B8A942C312684002CC442 /* DailyUsageView.swift in Sources */,
 				335B8A932C312683002CC442 /* AccountView.swift in Sources */,
 				335B8A742C312530002CC442 /* SLT_Usage_MeterApp.swift in Sources */,
 				33EF3DF22FE2D0CC001CF21F /* CacheManager.swift in Sources */,
+				33EF4DF22FE2D0CC001CF21F /* DiskCacheManager.swift in Sources */,
 				335B8A7B2C312530002CC442 /* ContentView.swift in Sources */,
 				339535FB2F0C4D7100DF1AC2 /* Models.swift in Sources */,
 				339535FC2F0C4D7100DF1AC2 /* Constants.swift in Sources */,
@@ -402,6 +412,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33EF3DF02FE2D0CC001CF21F /* CacheManager.swift in Sources */,
+				33EF4DF02FE2D0CC001CF21F /* DiskCacheManager.swift in Sources */,
 				33495C782FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */,
 				339535F82F0C4D7100DF1AC2 /* Models.swift in Sources */,
 				339535F92F0C4D7100DF1AC2 /* Constants.swift in Sources */,
@@ -419,6 +430,7 @@
 				C8AE43B60D0180714908633C /* Secrets.swift in Sources */,
 				30BAAA68952C74EC8BE7336C /* Constants.swift in Sources */,
 				33EF3DF12FE2D0CC001CF21F /* CacheManager.swift in Sources */,
+				33EF4DF12FE2D0CC001CF21F /* DiskCacheManager.swift in Sources */,
 				33495C792FEBEB3A0029D23C /* MockDataSanitizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -568,6 +580,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SLT Usage Meter/Preview Content\"";
+				DEVELOPMENT_TEAM = P25X57A3R8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -615,6 +628,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SLT Usage Meter/Preview Content\"";
+				DEVELOPMENT_TEAM = P25X57A3R8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -661,6 +675,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = P25X57A3R8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -713,6 +728,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = P25X57A3R8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;

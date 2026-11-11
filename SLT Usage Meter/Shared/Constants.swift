@@ -48,6 +48,10 @@ enum APIEndpoint {
     case accountDetail(username: String)
     case usageSummary(subscriberID: String)
     case vasBundles(subscriberID: String)
+    case currentDailyUsage(subscriberID: String, billDate: String)
+    case previousDailyUsage(subscriberID: String, billDate: String, monthIndex: Int)
+    case protocolReport(subscriberID: String, date: String)
+    case profile(subscriberID: String)
     case refreshToken
     
     var url: URL {
@@ -60,6 +64,14 @@ enum APIEndpoint {
             return URL(string: "\(AppConstants.API.baseURL)/BBVAS/UsageSummary?subscriberID=\(subscriberID)")!
         case .vasBundles(let subscriberID):
             return URL(string: "\(AppConstants.API.baseURL)/BBVAS/GetDashboardVASBundles?subscriberID=\(subscriberID)")!
+        case .currentDailyUsage(let subscriberID, let billDate):
+            return URL(string: "\(AppConstants.API.baseURL)/BBVAS/EnhancedCurrentDailyUsage?subscriberID=\(subscriberID)&billDate=\(billDate)")!
+        case .previousDailyUsage(let subscriberID, let billDate, let monthIndex):
+            return URL(string: "\(AppConstants.API.baseURL)/BBVAS/EnhancedPreviousDailyUsage?subscriberID=\(subscriberID)&billDate=\(billDate)&monthIndex=\(monthIndex)")!
+        case .protocolReport(let subscriberID, let date):
+            return URL(string: "\(AppConstants.API.baseURL)/BBVAS/ProtocolReport?subscriberID=\(subscriberID)&date=\(date)")!
+        case .profile(let subscriberID):
+            return URL(string: "\(AppConstants.API.baseURL)/VAS/GetProfileRequest?subscriberID=\(subscriberID)")!
         case .refreshToken:
             return URL(string: "\(AppConstants.API.baseURL)/Account/RefreshToken")!
         }

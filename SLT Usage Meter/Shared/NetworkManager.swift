@@ -211,6 +211,86 @@ class NetworkManager {
         }
     }
     
+    // MARK: - Profile / Detailed Report Access
+    
+    /// How long a stored "protocol report" privilege is trusted before the profile is re-checked.
+    private static let profileAccessTTL: TimeInterval = 7 * 24 * 60 * 60 // 7 days
+    
+    private struct StoredReportAccess: Codable {
+        let enabled: Bool
+        let checkedAt: Date
+    }
+    
+    private static let reportAccessKeyPrefix = "protocolReportAccess_"
+    private func reportAccessKey(_ subscriberID: String) -> String { "\(Self.reportAccessKeyPrefix)\(subscriberID)" }
+    
+    /// Clears all cached responses (summary, VAS, daily usage, protocol reports, profile privileges).
+    func clearAllCaches() {
+        CacheManager.shared.clearAll()
+        DiskCacheManager.shared.clearAll()
+        if let defaults = UserDefaults(suiteName: AppConstants.suiteName) {
+            for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(Self.reportAccessKeyPrefix) {
+                defaults.removeObject(forKey: key)
+            }
+        }
+    }
+    
+    private static func dayString(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: date)
+    }
+    
+    /// A protocol report for a finished day never changes. Today's and yesterday's may still be
+    /// updated by the provider, so those are only trusted for an hour.
+    private func protocolReportMaxAge(forDate date: String) -> TimeInterval? {
+        let recent = [Date(), Date().addingTimeInterval(-86_400)].map(Self.dayString)
+        return recent.contains(date) ? 60 * 60 : nil
+    }
+    
+    /// Last stored protocol-report privilege for this account, or nil if never checked. No network.
+    func storedProtocolReportAccess(subscriberID: String) -> Bool? {
+        guard let data = UserDefaults(suiteName: AppConstants.suiteName)?.data(forKey: reportAccessKey(subscriberID)),
+              let stored = try? JSONDecoder().decode(StoredReportAccess.self, from: data) else { return nil }
+        return stored.enabled
+    }
+    
+    /// Whether the account has detailed (protocol) reports enabled.
+    /// Calls `GetProfileRequest` only when nothing is stored, the stored value is older than 7 days,
+    /// or `forceRefresh` is set. On failure falls back to the stored value (nil = unknown).
+    func fetchProtocolReportAccess(subscriberID: String, forceRefresh: Bool = false) async -> Bool? {
+        let defaults = UserDefaults(suiteName: AppConstants.suiteName)
+        let key = reportAccessKey(subscriberID)
+        
+        if !forceRefresh,
+           let data = defaults?.data(forKey: key),
+           let stored = try? JSONDecoder().decode(StoredReportAccess.self, from: data),
+           Date().timeIntervalSince(stored.checkedAt) < Self.profileAccessTTL {
+            return stored.enabled
+        }
+        
+        do {
+            let internationalNumber = convertToInternationalFormat(subscriberID)
+            let request = try createRequest(url: APIEndpoint.profile(subscriberID: internationalNumber).url)
+            let (data, _) = try await execute(request: request)
+            let response = try JSONDecoder().decode(ProfileResponse.self, from: data)
+            
+            guard let enabled = response.dataBundle?.priviledges?.protocol_report else {
+                return storedProtocolReportAccess(subscriberID: subscriberID)
+            }
+            if !AppConstants.isScreenshotMode,
+               let encoded = try? JSONEncoder().encode(StoredReportAccess(enabled: enabled, checkedAt: Date())) {
+                defaults?.set(encoded, forKey: key)
+            }
+            return enabled
+        } catch {
+            print("fetchProtocolReportAccess failed: \(error)")
+            return storedProtocolReportAccess(subscriberID: subscriberID)
+        }
+    }
+    
     func fetchVASBundles(subscriberID: String, forceRefresh: Bool = false) async throws -> [UsageDetail] {
         let cacheKey = "vasBundles_\(subscriberID)"
         
@@ -242,8 +322,65 @@ class NetworkManager {
         }
     }
     
-    // MARK: - Private Helpers
+    func fetchCurrentDailyUsage(subscriberID: String, billDate: String = "01", forceRefresh: Bool = false) async throws -> DailyUsageDataBundle? {
+        let cacheKey = "currentDailyUsage_\(subscriberID)_\(billDate)"
+        
+        if !forceRefresh, let cached: DailyUsageDataBundle = DiskCacheManager.shared.load(forKey: cacheKey, isCurrentMonth: true) {
+            return cached
+        }
+        
+        let internationalNumber = convertToInternationalFormat(subscriberID)
+        let url = APIEndpoint.currentDailyUsage(subscriberID: internationalNumber, billDate: billDate).url
+        let request = try createRequest(url: url)
+        
+        let (data, _) = try await execute(request: request)
+        let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
+        if let bundle = response.dataBundle {
+            DiskCacheManager.shared.save(bundle, forKey: cacheKey)
+        }
+        return response.dataBundle
+    }
     
+    func fetchPreviousDailyUsage(subscriberID: String, billDate: String = "01", monthIndex: Int, forceRefresh: Bool = false) async throws -> DailyUsageDataBundle? {
+        // "previous1" means a different month after rollover, so key on the current calendar month too.
+        let cacheKey = "previousDailyUsage_\(subscriberID)_\(billDate)_\(monthIndex)_\(String(Self.dayString(Date()).prefix(7)))"
+        
+        if !forceRefresh, let cached: DailyUsageDataBundle = DiskCacheManager.shared.load(forKey: cacheKey, isCurrentMonth: false) {
+            return cached
+        }
+        
+        let internationalNumber = convertToInternationalFormat(subscriberID)
+        let url = APIEndpoint.previousDailyUsage(subscriberID: internationalNumber, billDate: billDate, monthIndex: monthIndex).url
+        let request = try createRequest(url: url)
+        
+        let (data, _) = try await execute(request: request)
+        let response = try JSONDecoder().decode(DailyUsageResponse.self, from: data)
+        if let bundle = response.dataBundle {
+            DiskCacheManager.shared.save(bundle, forKey: cacheKey)
+        }
+        return response.dataBundle
+    }
+    
+    func fetchProtocolReport(subscriberID: String, date: String, forceRefresh: Bool = false) async throws -> ProtocolReportBundle? {
+        let cacheKey = "protocolReport_\(subscriberID)_\(date)"
+        
+        if !forceRefresh, let cached: ProtocolReportBundle = DiskCacheManager.shared.load(forKey: cacheKey, isCurrentMonth: false, maxAge: protocolReportMaxAge(forDate: date)) {
+            return cached
+        }
+        
+        let internationalNumber = convertToInternationalFormat(subscriberID)
+        let url = APIEndpoint.protocolReport(subscriberID: internationalNumber, date: date).url
+        let request = try createRequest(url: url)
+        
+        let (data, _) = try await execute(request: request)
+        let response = try JSONDecoder().decode(ProtocolReportResponse.self, from: data)
+        if let bundle = response.dataBundle {
+            DiskCacheManager.shared.save(bundle, forKey: cacheKey)
+        }
+        return response.dataBundle
+    }
+    
+    // MARK: - Private Helpers
     // Helper function to convert phone number to international format
     private func convertToInternationalFormat(_ phoneNumber: String) -> String {
         let cleaned = phoneNumber.replacingOccurrences(of: " ", with: "")
