@@ -22,7 +22,9 @@ enum APIError: LocalizedError {
 class NetworkManager {
     static let shared = NetworkManager()
     
-    private init() {}
+    private init() {
+        KeychainHelper.shared.migrateFromSyncedKeychainIfNeeded()
+    }
     
     // Custom URLSession with extended timeouts to prevent -1005 errors
     private let session: URLSession = {
@@ -58,7 +60,9 @@ class NetworkManager {
         get { KeychainHelper.shared.read(forKey: AppConstants.Keys.username) }
     }
     
-    func logout() {
+    func logout(reason: String = "unspecified") {
+        AuthLog.log("LOGOUT: \(reason). Wiping keychain.")
+        UserDefaults(suiteName: AppConstants.suiteName)?.set(false, forKey: AppConstants.Keys.wasSignedIn)
         KeychainHelper.shared.delete(forKey: AppConstants.Keys.accessToken)
         KeychainHelper.shared.delete(forKey: AppConstants.Keys.refreshToken)
         KeychainHelper.shared.delete(forKey: AppConstants.Keys.username)
@@ -96,6 +100,8 @@ class NetworkManager {
                 KeychainHelper.shared.save(newRefreshToken, forKey: AppConstants.Keys.refreshToken)
             }
             KeychainHelper.shared.save(username, forKey: AppConstants.Keys.username)
+            UserDefaults(suiteName: AppConstants.suiteName)?.set(true, forKey: AppConstants.Keys.wasSignedIn)
+            AuthLog.log("login OK; refreshToken \(loginResponse.refreshToken == nil ? "NOT returned" : "stored")")
             WidgetCenter.shared.reloadAllTimelines()
             
             return loginResponse.accessToken
@@ -334,9 +340,23 @@ class NetworkManager {
     
     private func execute(request: URLRequest) async throws -> (Data, URLResponse) {
         let originalAuthHeader = request.value(forHTTPHeaderField: "authorization")
-        let (data, response) = try await session.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            AuthLog.log("transport error on \(request.url?.path ?? "?"): \(error.localizedDescription)")
+            throw error
+        }
         
         if let httpResponse = response as? HTTPURLResponse {
+            #if DEBUG
+            if originalAuthHeader == "bearer expired-test-token" {
+                let bodyPreview = String(data: data, encoding: .utf8)?.prefix(200) ?? "<non-utf8>"
+                AuthLog.log("DEBUG probe \(request.url?.path ?? "?") -> HTTP \(httpResponse.statusCode) body=\(bodyPreview)")
+            }
+            #endif
+            
             if httpResponse.statusCode == 401 || httpResponse.statusCode == 403 {
                 // Token expired. Let's try to refresh automatically!
                 
@@ -349,35 +369,42 @@ class NetworkManager {
                     return try await session.data(for: retriedRequest)
                 }
                 
+                AuthLog.log("HTTP \(httpResponse.statusCode) from \(request.url?.path ?? "?"); attempting refresh")
                 do {
-                    print("NetworkManager: Access token expired. Attempting background token refresh...")
-                    let newAccessToken = try await TokenRefresher.shared.refresh(using: self)
+                    let newAccessToken = try await TokenRefresher.shared.refresh(using: self, failedAuthHeader: originalAuthHeader)
                     
                     // Re-create request with the fresh token
                     var retriedRequest = request
                     retriedRequest.setValue("bearer \(newAccessToken)", forHTTPHeaderField: "authorization")
-                    
-                    print("NetworkManager: Token refresh successful. Retrying original request...")
                     return try await session.data(for: retriedRequest)
                 } catch {
-                    // Check AGAIN if another process successfully refreshed it while we were failing
+                    // Another process may have refreshed while we were failing
                     if let currentToken = KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken),
                        "bearer \(currentToken)" != originalAuthHeader {
-                        print("NetworkManager: Token refresh failed, but another process succeeded. Retrying...")
+                        AuthLog.log("refresh failed (\(error.localizedDescription)) but keychain holds a newer token; retrying with it")
                         var retriedRequest = request
                         retriedRequest.setValue("bearer \(currentToken)", forHTTPHeaderField: "authorization")
                         return try await session.data(for: retriedRequest)
                     }
                     
-                    print("NetworkManager: Token refresh failed with error: \(error).")
-                    
-                    // Only log out if it's a true auth rejection (400 or 401), not a network/server error
-                    if let nsError = error as NSError?, nsError.domain == "Auth", nsError.code == 400 || nsError.code == 401 {
-                        print("NetworkManager: Invalid refresh token. Logging out...")
-                        logout()
+                    let nsError = error as NSError
+                    // Only a definitive rejection of the refresh token ends the session.
+                    // Network errors / 5xx / decoding problems must never log the user out.
+                    if nsError.domain == "Auth", nsError.code == 400 || nsError.code == 401 {
+                        if AuthLog.isExtension {
+                            // The widget must not wipe the shared keychain; the app decides.
+                            AuthLog.log("refresh rejected (\(nsError.code)) in widget; NOT wiping credentials")
+                        } else {
+                            logout(reason: "refresh token rejected: \(nsError.localizedDescription)")
+                        }
+                    } else {
+                        AuthLog.log("refresh failed transiently, keeping session: \(nsError.domain) \(nsError.code) \(nsError.localizedDescription)")
                     }
                     throw URLError(.userAuthenticationRequired)
                 }
+            } else if !(200...299).contains(httpResponse.statusCode) {
+                let bodyPreview = String(data: data, encoding: .utf8)?.prefix(200) ?? "<non-utf8>"
+                AuthLog.log("HTTP \(httpResponse.statusCode) from \(request.url?.path ?? "?") body=\(bodyPreview)")
             }
         }
         
@@ -386,39 +413,58 @@ class NetworkManager {
     
     // MARK: - Token Refresh
     
-    func performTokenRefresh() async throws -> String {
-        guard let refreshToken = KeychainHelper.shared.read(forKey: AppConstants.Keys.refreshToken),
-              let username = KeychainHelper.shared.read(forKey: AppConstants.Keys.username) else {
-            throw URLError(.userAuthenticationRequired)
-        }
-        
-        let url = APIEndpoint.refreshToken.url
-        var request = createBaseRequest(url: url, method: "POST", isUrlEncoded: true)
-        
-        let encodedToken = percentEncode(refreshToken)
-        let encodedUsername = percentEncode(username)
-        let body = "username=\(encodedUsername)&refreshToken=\(encodedToken)&channelID=WEB"
-        request.httpBody = body.data(using: .utf8)
-        
-        let (data, response) = try await session.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-        
-        if httpResponse.statusCode == 200 {
-            let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
-            
-            // Save new credentials securely
-            KeychainHelper.shared.save(loginResponse.accessToken, forKey: AppConstants.Keys.accessToken)
-            if let newRefreshToken = loginResponse.refreshToken {
-                KeychainHelper.shared.save(newRefreshToken, forKey: AppConstants.Keys.refreshToken)
+    func performTokenRefresh(failedAuthHeader: String? = nil) async throws -> String {
+        // Serialise across app + widget processes: refresh tokens may be single-use (rotating).
+        return try await CrossProcessLock.withLock {
+            // Someone else (the other process) may have refreshed while we waited for the lock.
+            if let failed = failedAuthHeader,
+               let current = KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken),
+               "bearer \(current)" != failed {
+                AuthLog.log("refresh skipped: token already renewed by another process")
+                return current
             }
             
-            return loginResponse.accessToken
-        } else {
-            let responseString = String(data: data, encoding: .utf8) ?? "No response body"
-            throw NSError(domain: "Auth", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Token refresh failed with status \(httpResponse.statusCode): \(responseString)"])
+            let refreshRead = KeychainHelper.shared.readWithStatus(forKey: AppConstants.Keys.refreshToken)
+            let usernameRead = KeychainHelper.shared.readWithStatus(forKey: AppConstants.Keys.username)
+            guard let refreshToken = refreshRead.value, let username = usernameRead.value else {
+                AuthLog.log("refresh impossible: refreshToken status=\(refreshRead.status) username status=\(usernameRead.status)")
+                if refreshRead.status == errSecItemNotFound || usernameRead.status == errSecItemNotFound {
+                    throw NSError(domain: "Auth", code: 401, userInfo: [NSLocalizedDescriptionKey: "No stored refresh token"])
+                }
+                throw URLError(.userAuthenticationRequired) // keychain temporarily unreadable (e.g. device locked)
+            }
+            
+            let url = APIEndpoint.refreshToken.url
+            var request = createBaseRequest(url: url, method: "POST", isUrlEncoded: true)
+            
+            let encodedToken = percentEncode(refreshToken)
+            let encodedUsername = percentEncode(username)
+            let body = "username=\(encodedUsername)&refreshToken=\(encodedToken)&channelID=WEB"
+            request.httpBody = body.data(using: .utf8)
+            
+            let (data, response) = try await session.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw URLError(.badServerResponse)
+            }
+            
+            if httpResponse.statusCode == 200 {
+                let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
+                
+                // Persist the (possibly rotated) refresh token FIRST: if we are killed between the
+                // two writes, the old access token is merely stale, but a lost refresh token is fatal.
+                if let newRefreshToken = loginResponse.refreshToken {
+                    KeychainHelper.shared.save(newRefreshToken, forKey: AppConstants.Keys.refreshToken)
+                }
+                KeychainHelper.shared.save(loginResponse.accessToken, forKey: AppConstants.Keys.accessToken)
+                
+                AuthLog.log("refresh OK; refreshToken \(loginResponse.refreshToken == nil ? "NOT returned" : (loginResponse.refreshToken == refreshToken ? "unchanged" : "rotated"))")
+                return loginResponse.accessToken
+            } else {
+                let responseString = String(data: data, encoding: .utf8) ?? "No response body"
+                AuthLog.log("refresh rejected: HTTP \(httpResponse.statusCode) body=\(responseString.prefix(300))")
+                throw NSError(domain: "Auth", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Token refresh failed with status \(httpResponse.statusCode): \(responseString)"])
+            }
         }
     }
 }
@@ -427,11 +473,13 @@ class NetworkManager {
 
 actor TokenRefresher {
     static let shared = TokenRefresher()
-    private init() {}
+    private init() {
+        KeychainHelper.shared.migrateFromSyncedKeychainIfNeeded()
+    }
     
     private var activeTask: Task<String, Error>?
     
-    func refresh(using manager: NetworkManager) async throws -> String {
+    func refresh(using manager: NetworkManager, failedAuthHeader: String? = nil) async throws -> String {
         // If a refresh is already in progress, await its result
         if let existingTask = activeTask {
             return try await existingTask.value
@@ -442,7 +490,7 @@ actor TokenRefresher {
             defer {
                 self.activeTask = nil
             }
-            return try await manager.performTokenRefresh()
+            return try await manager.performTokenRefresh(failedAuthHeader: failedAuthHeader)
         }
         
         activeTask = task

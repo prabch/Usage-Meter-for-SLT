@@ -102,6 +102,11 @@ struct LoginView: View {
                                 }
                                 
                                 instructionText
+                                #if DEBUG
+                                AuthDiagnosticsButton()
+                                    .padding(.top, 2)
+                                    .foregroundColor(.primary.opacity(0.5))
+                                #endif
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
