@@ -1226,6 +1226,7 @@ struct ProtocolReportRow: View {
                 Text(entry.name)
                     .font(.caption)
                     .lineLimit(1)
+                    .textSelection(.enabled)
                 Spacer()
                 if let amountText {
                     Text(amountText)
