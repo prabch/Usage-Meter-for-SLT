@@ -145,6 +145,18 @@ struct AccountView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    
+                    VStack(spacing: 4) {
+                        Text("Contributions")
+                            .font(.caption2.weight(.medium))
+                            .foregroundColor(.secondary.opacity(0.7))
+                        
+                        Text("Daily Usage — [Danuja Jayasuriya](https://github.com/danuja01)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary.opacity(0.6))
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
