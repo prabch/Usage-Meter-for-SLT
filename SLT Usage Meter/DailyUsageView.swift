@@ -695,6 +695,9 @@ struct DailyUsageOverviewCard: View {
     var monthTitle: String = "Current"
     var detailedReportsEnabled: Bool?
     
+    @Environment(\.openURL) private var openURL
+    @State private var showingDisabledReportAlert = false
+    
     @ViewBuilder
     private var reportsBadge: some View {
         if let enabled = detailedReportsEnabled {
@@ -703,21 +706,61 @@ struct DailyUsageOverviewCard: View {
             #else
             let tint: Color = .white
             #endif
-            HStack(spacing: 4) {
-                Image(systemName: enabled ? "checkmark.circle.fill" : "xmark.circle")
-                Text(enabled ? "Detailed reports on" : "Detailed reports off")
+            
+            if enabled {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                    Text("Detailed reports on")
+                }
+                .font(.caption2)
+                .foregroundColor(tint.opacity(1))
+            } else {
+                Button {
+                    showingDisabledReportAlert = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.circle")
+                        Text("Detailed reports off")
+                        Image(systemName: "info.circle")
+                    }
+                    .font(.caption2)
+                    .foregroundColor(tint.opacity(0.85))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                #if os(macOS)
+                .onHover { inside in
+                    if inside {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
+                }
+                #endif
+                .accessibilityLabel("Detailed reports off")
+                .accessibilityHint("Shows information on enabling detailed reporting")
             }
-            .font(.caption2)
-            .foregroundColor(tint.opacity(enabled ? 1 : 0.8))
         }
     }
     
     var body: some View {
-        #if os(macOS)
-        macOverviewCard
-        #else
-        iosOverviewCard
-        #endif
+        Group {
+            #if os(macOS)
+            macOverviewCard
+            #else
+            iosOverviewCard
+            #endif
+        }
+        .alert("Detailed Reports Off", isPresented: $showingDisabledReportAlert) {
+            Button("Open MySLT Portal") {
+                if let url = URL(string: "https://myslt.slt.lk/") {
+                    openURL(url)
+                }
+            }
+            Button("Dismiss", role: .cancel) {}
+        } message: {
+            Text("Detailed reporting is currently turned off for this SLT account. You can enable it via the MySLT portal (myslt.slt.lk) to add the feature to your monthly bill.")
+        }
     }
     
     private var macOverviewCard: some View {
