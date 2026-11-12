@@ -34,6 +34,16 @@ class CacheManager {
         return entry.timestamp
     }
     
+    /// Removes every entry written by this manager (anything stored as a timestamped `CacheEntry`).
+    func clearAll() {
+        guard let defaults else { return }
+        for (key, value) in defaults.dictionaryRepresentation() {
+            if let data = value as? Data, (try? JSONDecoder().decode(AnyCacheEntry.self, from: data)) != nil {
+                defaults.removeObject(forKey: key)
+            }
+        }
+    }
+    
     func save<T: Codable>(_ data: T, forKey key: String) {
         if AppConstants.isScreenshotMode { return }
         

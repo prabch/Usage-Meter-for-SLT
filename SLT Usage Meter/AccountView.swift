@@ -68,6 +68,8 @@ struct AccountView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
+                ClearCacheButton()
+                
                 Button(action: {
                     showingLogoutConfirmation = true
                 }) {
@@ -93,7 +95,7 @@ struct AccountView: View {
                     }
                     Button("Cancel", role: .cancel) {}
                 } message: {
-                    Text("You will be logged out of all devices on your Apple ID.")
+                    Text("You will be logged out on this device.")
                 }
                 
                 // About & Disclaimer Section
@@ -124,6 +126,11 @@ struct AccountView: View {
                         .foregroundColor(.secondary.opacity(0.5))
                         .padding(.top, 4)
                     
+                    #if DEBUG
+                    AuthDiagnosticsButton()
+                    DebugTokenExpiryButton()
+                    #endif
+                    
                     Link(destination: URL(string: "https://prabch.com")!) {
                         HStack(spacing: 6) {
                             Image("favicon")
@@ -138,6 +145,18 @@ struct AccountView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    
+                    VStack(spacing: 4) {
+                        Text("Contributions")
+                            .font(.caption2.weight(.medium))
+                            .foregroundColor(.secondary.opacity(0.7))
+                        
+                        Text("Daily Usage — [Danuja Jayasuriya](https://github.com/danuja01)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary.opacity(0.6))
+                    }
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
@@ -145,6 +164,162 @@ struct AccountView: View {
                 Spacer()
             }
             .padding(.vertical)
+        }
+    }
+}
+
+
+#if DEBUG
+/// Copies the shared auth event log (no secrets) to the clipboard so it can be pasted into a bug report.
+struct AuthDiagnosticsButton: View {
+    @State private var copied = false
+    
+    var body: some View {
+        Button(copied ? "Copied auth log" : "Copy auth diagnostics") {
+            let text = AuthLog.read()
+            #if os(iOS)
+            UIPasteboard.general.string = text
+            #else
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+            #endif
+            copied = true
+        }
+        .font(.caption2)
+        .buttonStyle(.plain)
+        .foregroundColor(.secondary)
+    }
+}
+
+/// Debug-only helper to test token expiry/refresh and widget reload without editing code.
+private struct DebugTokenExpiryButton: View {
+    @State private var isTesting = false
+    @State private var statusText: String?
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            Button(isTesting ? "Testing..." : "Simulate Expired Token (Debug)") {
+                runExpiryTest()
+            }
+            .font(.caption2)
+            .buttonStyle(.plain)
+            .foregroundColor(.orange)
+            .disabled(isTesting)
+            
+            Button(isTesting ? "Testing..." : "Test Direct Refresh (Debug)") {
+                runDirectRefreshTest()
+            }
+            .font(.caption2)
+            .buttonStyle(.plain)
+            .foregroundColor(.orange)
+            .disabled(isTesting)
+            
+            if let statusText = statusText {
+                Text(statusText)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+    }
+    
+    private func runExpiryTest() {
+        isTesting = true
+        statusText = nil
+        
+        let existingToken = KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken)
+        let previousValidToken = (existingToken != "expired-test-token") ? existingToken : nil
+        
+        KeychainHelper.shared.save("expired-test-token", forKey: AppConstants.Keys.accessToken)
+        AuthLog.log("DEBUG: forced expired access token")
+        WidgetCenter.shared.reloadAllTimelines()
+        
+        Task {
+            do {
+                let accounts = try await NetworkManager.shared.fetchAccounts(forceRefresh: true)
+                let current = KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken)
+                let renewed = current != nil && current != "expired-test-token"
+                if !renewed, let restore = previousValidToken {
+                    KeychainHelper.shared.save(restore, forKey: AppConstants.Keys.accessToken)
+                }
+                AuthLog.log("DEBUG: test fetchAccounts returned \(accounts.count) accounts, renewed=\(renewed)")
+                await MainActor.run {
+                    statusText = renewed ? "Refresh succeeded — copy auth diagnostics to inspect" : "Token was not renewed (likely non-401 response) — check auth diagnostics"
+                    isTesting = false
+                }
+            } catch {
+                if let restore = previousValidToken,
+                   KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken) == "expired-test-token" {
+                    KeychainHelper.shared.save(restore, forKey: AppConstants.Keys.accessToken)
+                }
+                AuthLog.log("DEBUG: test fetchAccounts threw \(error.localizedDescription)")
+                await MainActor.run {
+                    statusText = "Failed: \(error.localizedDescription)"
+                    isTesting = false
+                }
+            }
+        }
+    }
+    
+    private func runDirectRefreshTest() {
+        isTesting = true
+        statusText = nil
+        AuthLog.log("DEBUG: invoking direct TokenRefresher.refresh")
+        
+        Task {
+            do {
+                _ = try await TokenRefresher.shared.refresh(using: NetworkManager.shared)
+                await MainActor.run {
+                    statusText = "Direct refresh succeeded — copy auth diagnostics to inspect"
+                    isTesting = false
+                }
+            } catch {
+                AuthLog.log("DEBUG: direct refresh threw \(error.localizedDescription)")
+                await MainActor.run {
+                    statusText = "Direct refresh failed: \(error.localizedDescription)"
+                    isTesting = false
+                }
+            }
+        }
+    }
+}
+#endif
+
+
+/// Clears cached usage, daily usage and protocol report data. Account sign-in is not affected.
+struct ClearCacheButton: View {
+    @State private var cleared = false
+    @State private var showingConfirmation = false
+    
+    var body: some View {
+        Button(action: {
+            showingConfirmation = true
+        }) {
+            HStack {
+                Image(systemName: cleared ? "checkmark.circle" : "trash")
+                Text(cleared ? "Cache cleared" : "Clear Cache")
+            }
+            .foregroundColor(.accentColor)
+            #if os(macOS)
+            .frame(maxWidth: 300)
+            #else
+            .frame(maxWidth: .infinity)
+            #endif
+            .padding()
+            .background(Color.accentColor.opacity(0.12))
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal)
+        .confirmationDialog("Are you sure you want to clear the cache?", isPresented: $showingConfirmation, titleVisibility: .visible) {
+            Button("Clear Cache", role: .destructive) {
+                NetworkManager.shared.clearAllCaches()
+                cleared = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { cleared = false }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Stored usage data and reports will be removed from this device. Your login session won't be affected.")
         }
     }
 }

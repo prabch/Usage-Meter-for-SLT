@@ -7,12 +7,14 @@
 
 import SwiftUI
 import WidgetKit
+import Security
 
 
 struct ContentView: View {
     @State private var isLoggedIn: Bool = false
     @State private var accessToken: String?
     @State private var requestedAccountID: String?
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -47,6 +49,11 @@ struct ContentView: View {
                 logout()
             }
         }
+        .onChange(of: scenePhase) { phase in
+            // Re-sync with the keychain whenever we come to the foreground: the widget may have
+            // renewed the tokens, or a launch-time read may have failed transiently.
+            if phase == .active { checkStoredCredentials() }
+        }
         .onOpenURL { url in
             if url.scheme == "sltusage" && url.host == "account" {
                 let accountID = url.lastPathComponent
@@ -58,21 +65,33 @@ struct ContentView: View {
     
     private func checkStoredCredentials() {
         print("ContentView: Checking for stored credentials in Keychain...")
+        KeychainHelper.shared.migrateFromSyncedKeychainIfNeeded()
         
-        // Check if we have a stored access token and username in Keychain
-        if let storedAccessToken = KeychainHelper.shared.read(forKey: AppConstants.Keys.accessToken),
-           let storedUsername = KeychainHelper.shared.read(forKey: AppConstants.Keys.username) {
+        let defaults = UserDefaults(suiteName: AppConstants.suiteName)
+        let wasSignedIn = defaults?.bool(forKey: AppConstants.Keys.wasSignedIn) ?? false
+        let tokenRead = KeychainHelper.shared.readWithStatus(forKey: AppConstants.Keys.accessToken)
+        let userRead = KeychainHelper.shared.readWithStatus(forKey: AppConstants.Keys.username)
+        
+        if let storedAccessToken = tokenRead.value, let storedUsername = userRead.value {
             print("ContentView: Found stored credentials for user: \(storedUsername)")
+            defaults?.set(true, forKey: AppConstants.Keys.wasSignedIn)
+            if !isLoggedIn {
+                AuthLog.log("credentials found; restoring signed-in state")
+            }
             self.accessToken = storedAccessToken
             self.isLoggedIn = true
         } else {
-            print("ContentView: No stored credentials found. Showing login screen.")
+            if wasSignedIn || isLoggedIn || tokenRead.status != errSecItemNotFound || userRead.status != errSecItemNotFound {
+                AuthLog.log("showing login (wasSignedIn=\(wasSignedIn)): accessToken status=\(tokenRead.status) username status=\(userRead.status)")
+            }
             self.isLoggedIn = false
         }
     }
 
     private func logout() {
         print("ContentView: Logout triggered.")
+        AuthLog.log("ContentView.logout() invoked (user tap or TokenExpired notification)")
+        UserDefaults(suiteName: AppConstants.suiteName)?.set(false, forKey: AppConstants.Keys.wasSignedIn)
         KeychainHelper.shared.delete(forKey: AppConstants.Keys.accessToken)
         KeychainHelper.shared.delete(forKey: AppConstants.Keys.refreshToken)
         KeychainHelper.shared.delete(forKey: AppConstants.Keys.username)
