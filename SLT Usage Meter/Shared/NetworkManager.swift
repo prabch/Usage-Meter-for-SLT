@@ -252,6 +252,7 @@ class NetworkManager {
     
     /// Last stored protocol-report privilege for this account, or nil if never checked. No network.
     func storedProtocolReportAccess(subscriberID: String) -> Bool? {
+        if AppConstants.isScreenshotMode { return nil }
         guard let data = UserDefaults(suiteName: AppConstants.suiteName)?.data(forKey: reportAccessKey(subscriberID)),
               let stored = try? JSONDecoder().decode(StoredReportAccess.self, from: data) else { return nil }
         return stored.enabled
@@ -264,7 +265,8 @@ class NetworkManager {
         let defaults = UserDefaults(suiteName: AppConstants.suiteName)
         let key = reportAccessKey(subscriberID)
         
-        if !forceRefresh,
+        if !AppConstants.isScreenshotMode,
+           !forceRefresh,
            let data = defaults?.data(forKey: key),
            let stored = try? JSONDecoder().decode(StoredReportAccess.self, from: data),
            Date().timeIntervalSince(stored.checkedAt) < Self.profileAccessTTL {

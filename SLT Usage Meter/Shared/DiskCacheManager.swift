@@ -36,6 +36,7 @@ class DiskCacheManager {
     }
     
     func save<T: Codable>(_ data: T, forKey key: String) {
+        if AppConstants.isScreenshotMode { return }
         ensureDirectoryExists()
         guard let fileURL = fileURL(forKey: key) else { return }
         
@@ -51,6 +52,7 @@ class DiskCacheManager {
     }
     
     func load<T: Codable>(forKey key: String, ignoreExpiration: Bool = false, isCurrentMonth: Bool = false, maxAge: TimeInterval? = nil) -> T? {
+        if AppConstants.isScreenshotMode { return nil }
         guard let fileURL = fileURL(forKey: key),
               FileManager.default.fileExists(atPath: fileURL.path) else {
             return nil
