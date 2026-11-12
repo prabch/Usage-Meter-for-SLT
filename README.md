@@ -23,12 +23,13 @@ It's just a simple native app and widget built with SwiftUI to peep your broadba
 ## Screenshots
 
 <p align="center">
-  <img src="https://prabch.com/slt/images/1.jpeg" width="19%" alt="Screenshot 1" />
-  <img src="https://prabch.com/slt/images/2.jpeg" width="19%" alt="Screenshot 2" />
-  <img src="https://prabch.com/slt/images/3.jpeg" width="19%" alt="Screenshot 3" />
-  <img src="https://prabch.com/slt/images/6.jpeg" width="19%" alt="Screenshot 6" />
-  <img src="https://prabch.com/slt/images/4.jpeg" width="19%" alt="Screenshot 4" />
-  <img src="https://prabch.com/slt/images/5.jpeg" width="19%" alt="Screenshot 5" />
+  <img src="https://prabch.com/slt/images/1.jpeg" width="30%" alt="Screenshot 1" />
+  <img src="https://prabch.com/slt/images/2.jpeg" width="30%" alt="Screenshot 2" />
+  <img src="https://prabch.com/slt/images/3.jpeg" width="30%" alt="Screenshot 3" />
+  <br />
+  <img src="https://prabch.com/slt/images/6.jpeg" width="30%" alt="Screenshot 6" />
+  <img src="https://prabch.com/slt/images/4.jpeg" width="30%" alt="Screenshot 4" />
+  <img src="https://prabch.com/slt/images/5.jpeg" width="30%" alt="Screenshot 5" />
 </p>
 
 ---
